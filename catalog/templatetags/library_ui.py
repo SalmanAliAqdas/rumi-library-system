@@ -2,6 +2,7 @@ from django import template
 from django.utils.translation import get_language
 
 from catalog.management_labels import LABELS as MANAGEMENT_LABELS
+from catalog.offline_labels import LABELS as OFFLINE_LABELS
 
 register = template.Library()
 
@@ -93,6 +94,7 @@ LABELS = {
 }
 
 LABELS.update(MANAGEMENT_LABELS)
+LABELS.update(OFFLINE_LABELS)
 
 
 @register.simple_tag

@@ -1,0 +1,21 @@
+{
+  "normalization": [
+    ["  A\tBOOK\n", "a book"], ["ＡＢＣ", "abc"], ["كِتَـاب ي", "کتاب ی"],
+    ["بُخَارِی", "بخاری"], ["علم‌وفن", "علم وفن"], ["کتا‍ب", "کتاب"],
+    ["A Book · كِتَاب", "a book · کتاب"], ["Café", "café"],
+    ["Straße ẞ", "strasse ss"], ["ΟΣ ς σ", "οσ σ σ"], ["İ", "i̇"],
+    ["Book\u001cTitle", "book title"], ["أ ة ے ى ؤ", "أ ة ے ى ؤ"]
+  ],
+  "books": [
+    {"id": 1, "title": "Garden", "aliases": "", "isbn": "", "summary": ""},
+    {"id": 2, "title": "Aliases", "aliases": "Garden\nBukhari", "isbn": "978-1-234-56789-X", "summary": ""},
+    {"id": 3, "title": "Garden paths", "aliases": "", "isbn": "", "summary": ""},
+    {"id": 4, "title": "Another title", "aliases": "", "isbn": "", "summary": "A garden story"},
+    {"id": 5, "title": "بُخَـاری", "aliases": "", "isbn": "", "summary": ""},
+    {"id": 6, "title": "كِتَابُ العِلْم", "aliases": "", "isbn": "", "summary": ""}
+  ],
+  "ranking": [
+    ["GARDEN", [2, 1, 3, 4]], ["Bukhari", [2]], ["بخاري", [5]],
+    ["کتاب العلم", [6]], ["978 1 234 56789 X", [2]], ["RL-000005", [5]]
+  ]
+}

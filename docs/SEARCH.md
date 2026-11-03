@@ -71,3 +71,14 @@ language codes to 12, and filter choices are validated. Invalid filters produce
 labelled errors and zero results. Pagination inputs are bounded and out-of-range
 pages use Django's safe paginator behavior. No raw SQL or user-supplied ordering
 is used.
+
+## Phase 3 offline parity
+
+The offline snapshot exports original text and normalized fields, and the browser
+uses equivalent query normalization/ranking in `static/offline/search.js`. Shared
+fixtures live in `tests/fixtures/search_parity.json`; both Python and Node consume
+them. A generated Python casefold/whitespace table handles runtime differences such
+as German sharp S and Greek sigma; JavaScript lowercase alone is insufficient.
+Offline tie sorting compares Unicode code points, matching Python rather than
+locale-dependent ordering. Snapshot validation checks normalized fields against
+display text before acceptance. `docs/OFFLINE.md` documents versions and limits.

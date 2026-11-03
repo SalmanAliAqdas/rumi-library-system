@@ -1,6 +1,28 @@
-# Project status — Phase 2
+# Project status — Phase 3
 
 Date: November 3, 2026 (Asia/Karachi). Scope: local implementation only. No infrastructure provisioned, no Neon/Vercel projects touched, no deployment configuration created.
+
+## Phase 3 completed
+
+- Dedicated `/offline/` public PWA interface; local manifest, code-drawn 192/512 PNG icons, standalone start URL, explicit download/update/remove, progress/cancellation, successful timestamps/counts and freshness/storage/installation notices in English, Urdu and Arabic. A native install button appears only when the browser supplies a prompt. Service workers require HTTPS or device-local localhost.
+- `/catalog/public-snapshot.json` exports the complete public collection with explicit field allowlists, normalized/original text, stable detail URLs, public copy/shelf/volume/availability and schema metadata. It shares Phase 2 visibility logic and uses a coherent database transaction. Safety caps return an explicit error, never truncation. No borrower/user/loan/receipt/private-settings fields are included.
+- IndexedDB schema version 1 stores public text and optional covers. Full validation precedes an atomic revision-checked replacement. Quota, invalid/network response, transaction abort and competing-tab failures keep the previous download. Removal tombstones prevent in-flight resurrection. Blocked/full/cleared storage and empty snapshots have recoverable states.
+- Offline ranked search/filter/pagination and previously unvisited detail/deep-link refresh work after download. Python and JS share fixtures and a generated casefold/whitespace table. Text renders with DOM text nodes, not executable HTML. Offline availability is explicitly historical. Display/fullscreen remains user-triggered.
+- Worker scope is only `/offline/`; an explicit public shell/assets allowlist is cached. Snapshots and all private/server-rendered management pages are network-only. Non-GETs are never queued/replayed. No skipWaiting, clients.claim or forced reload; upgrades wait for old offline tabs to close and clean only this app's obsolete caches.
+- Optional covers download separately with CORS/no credentials/no referrer, three concurrent requests, per-image timeout/2 MiB bound, 100-image/20 MiB stored limits and placeholders. Covers can be removed without text loss and are cleared only after a successful core replacement. There is no proxy, upload storage or external metadata lookup.
+- No new migrations or dependencies. Existing inventory and Phase 1/2 migration files are unchanged. Local SQLite remains separate from future Neon; keep the private transfer procedure in README and verify it before full real entry.
+
+## Phase 3 verification and limits
+
+- Final full suite with browser enabled: **64 tests discovered, 63 passed on SQLite, 1 PostgreSQL concurrency test skipped**. This includes the original librarian browser flow and four new offline Chromium tests, all with isolated test databases/contexts.
+- Five Node tests passed: shared Unicode/ranking fixtures, schema rejection, empty/invalid filters, streamed byte bounds, and ten 1,000-edition searches (about half a second total on this host; not a phone benchmark).
+- Actual browser verification: clean storage → entire 20-edition/21-public-copy snapshot → offline reload → English/Urdu/Arabic and alias search → combined filters → unvisited deep link/refresh/shelves → offline language switching/mobile RTL → private GET/POST network failure → online update → failed/invalid update rollback → confirmed removal/empty state. Separate browser cases verify quota/transaction abort rollback, two real tabs, stale-after-removal rejection, blocked storage, empty snapshots, safe catalogue text and independent cover success/404/CORS failure/removal.
+- Django system/migration consistency checks, Python lint/format, static collection and dependency checks passed. Public label completeness and generated JS parity tests replace gettext compilation; no gettext catalogue was added. Node syntax checks passed for authored JS modules. Screenshots are ignored and the Arabic mobile offline detail screenshot was visually reviewed.
+- Early test failures were fixture ambiguity and Playwright harness issues (CSP string evaluation, restoring a native method, and a convenience single-page context); these were corrected without weakening CSP and the final full suite passed.
+- Physical Samsung, Samsung Internet, Firefox, Safari, OS installation, deployment and PostgreSQL snapshot/concurrency behavior remain unverified. Chromium tests use a desktop browser with a mobile viewport. README documents trusted HTTPS or USB localhost forwarding for manual Samsung checks; plain LAN HTTP is insufficient.
+- Browser storage is not permanent or a backup. Old public downloads cannot be remotely erased when a record is hidden/deleted online. Only `/offline/` is available offline; normal public/admin/librarian URLs remain online. Worker upgrades require old offline tabs/windows to close. Optional external covers depend on CORS. Snapshot schema/Unicode versions must remain coordinated on future changes.
+
+Architecture, cache policy and verification details: `docs/OFFLINE.md`. Rebuild local icons/Unicode/labels with `python scripts/build_offline_assets.py` after intentional label changes.
 
 ## Phase 2 completed
 
@@ -56,7 +78,7 @@ No PostgreSQL server or dedicated test connection is available locally. SQLite d
 
 Search intentionally scans the filtered, prefetched catalogue in Python before pagination, suitable for this small installation but linear in catalogue size. There is no fuzzy or transliteration path; Roman Urdu requires recorded aliases. Public UI labels use `catalog/templatetags/library_ui.py` plus `catalog/management_labels.py`, database branding/categories and Django built-in translations. Native speaker review remains useful. More book languages remain configurable in admin; new scripts may require suitable local fonts. Session defaults do not persist across logout. Changing interface language reloads forms; the UI advises saving drafts first. The restricted initial librarian is the existing superuser; README lists permissions for other staff accounts.
 
-No offline/PWA support, metadata lookup, WhatsApp, QR labels, CSV, sitemap or deployment. Basic private loans remain editable in admin; the comfortable issue/return UI is Phase 4. External cover images may contact their host but send no referrer; missing/failed images use local placeholders. No upload storage has been introduced. Submission receipts are private, contain accessions and a librarian reference only, and are never exposed publicly. Fresh create forms intentionally allow additional copies; replay protection applies to the same submitted token.
+Offline/PWA public browsing is complete in Phase 3. Metadata lookup, WhatsApp, QR labels, CSV, sitemap and deployment remain planned. Basic private loans remain editable in admin; the comfortable issue/return UI is Phase 4. External covers are optional; missing/failed images use local placeholders. No upload storage has been introduced. Submission receipts are private and never exported offline. Fresh create forms intentionally allow additional copies; replay protection applies to the same submitted token.
 
 Production requires explicit environment values, PostgreSQL and HTTPS; Vercel without explicit production mode fails startup. Review actual Vercel proxy/static/runtime behavior and free-plan allowances in Phase 5. Official references are linked in README. No unverified deployment file is supplied.
 
@@ -64,7 +86,7 @@ Local SQLite data will not appear in Neon. Before full collection entry, follow 
 
 ## Exact next phase
 
-Implement **Phase 3 only** when requested: offline public browsing and searching. Add a PWA manifest/service worker and IndexedDB; explicitly download/update the entire public catalogue with original and normalized text. Publish a new snapshot only after complete successful download. Show connection state and last successful update. Support local search/filters/details and optional cover caching with placeholders. Never cache librarian/admin/authentication responses, loans, receipts or borrower data. First download requires internet and browser storage may be cleared. Editing/lending remain online. Do not begin custom lending, WhatsApp, QR, metadata lookup or deployment in this phase.
+Implement **Phase 4 only** when requested: basic private issue/return workflow; optional validated WhatsApp enquiries containing title/accession/URL (hidden without a valid number); stable copy QR destinations across interface languages and private printable labels; public-only CSV export plus a documented separate private backup procedure. Keep loan/borrower data out of offline snapshots/caches and public exports. Editing/lending remain online. Do not begin metadata enrichment or production deployment/provisioning in Phase 4.
 
 The full five-phase roadmap and PowerShell setup, checks, private migration path and GitHub steps are in README.md.
 

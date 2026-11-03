@@ -1,0 +1,16 @@
+{
+  "id": "/offline/",
+  "name": "Rumi Library",
+  "short_name": "Rumi Library",
+  "description": "Download and browse the public Rumi Library catalogue on this device.",
+  "start_url": "/offline/",
+  "scope": "/offline/",
+  "display": "standalone",
+  "background_color": "#faf7f0",
+  "theme_color": "#344f43",
+  "lang": "en",
+  "icons": [
+    {"src": "/static/offline/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "/static/offline/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
+}

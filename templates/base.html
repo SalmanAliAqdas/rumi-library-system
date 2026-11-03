@@ -9,5 +9,5 @@
 <form action="{% url 'set_language' %}" method="post" class="language-switch">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><label class="sr-only" for="interface-language">{% ui 'interface_language' %}</label><select id="interface-language" name="language"><option value="en" {% if lang == 'en' %}selected{% endif %}>English</option><option value="ur" {% if lang == 'ur' %}selected{% endif %}>اردو</option><option value="ar" {% if lang == 'ar' %}selected{% endif %}>العربية</option></select><button type="submit" aria-label="{% ui 'change_language' %}">↵</button></form></header>
 {% if demo_mode %}<div class="demo-banner">{% ui 'demo' %}</div>{% endif %}
 <main id="main">{% block content %}{% endblock %}</main>
-<footer class="wrap site-footer"><div><strong>{{ library.name }}</strong><p>{% ui 'footer' %}</p></div><span>RumiWare</span><a class="librarian" href="{% url 'librarian:dashboard' %}">{% ui 'librarian' %} ↗</a></footer>
+<footer class="wrap site-footer"><div><strong>{{ library.name }}</strong><p>{% ui 'footer' %}</p></div><span>RumiWare</span><a href="{% url 'offline' %}">{% ui 'offline_catalog' %} ↓</a><a class="librarian" href="{% url 'librarian:dashboard' %}">{% ui 'librarian' %} ↗</a></footer>
 </body></html>

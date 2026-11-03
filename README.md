@@ -22,7 +22,7 @@ Open http://127.0.0.1:8000/ publicly, http://127.0.0.1:8000/librarian/ for manag
 
 The seed command explicitly creates 20 fictional editions and 23 copies, including duplicates, three volumes and multilingual books. Rerunning does not duplicate records. It refuses production and non-SQLite databases. Four editable example shelves include an empty shelf; these are not a room map. Use a separate local checkout/database for real records; do not mix your full collection with demo content.
 
-## Upgrade an existing Phase 1 checkout
+## Upgrade an existing checkout
 
 Keep your existing `.env` and database. No dependency changes are required.
 
@@ -35,6 +35,86 @@ The additive migrations create private submission receipts and add missing Engli
 Urdu and Arabic language reference records without changing existing language names
 or inventory. Phase 1 migrations and records are preserved. Do not seed or reset a
 real collection as part of upgrading.
+
+Phase 3 adds no database migrations or dependencies. Existing inventory and private
+management workflows are unchanged. The `migrate` command remains safe to run to
+check that the existing migrations are current.
+
+## Offline catalogue and installation — Phase 3
+
+Open **http://127.0.0.1:8000/offline/**, also linked from the website footer. Once
+the small public interface and local fonts are prepared, click **Download offline
+catalog**. This saves the **entire public collection**, not the current result page.
+Wait for success, the last successful download timestamp and saved edition/copy
+counts before disconnecting. Bookmark `/offline/` or install from that page if the
+browser offers it. Normal `/`, `/books/`, librarian and admin pages remain online.
+
+Use **Update offline catalog** to replace the saved snapshot. A failed or interrupted
+update keeps the prior text catalogue; competing tabs cannot overwrite a newer
+local revision or restore a removed download. **Remove downloaded catalog** asks
+for confirmation and removes this device's saved text/covers. The small offline
+interface remains so it can show a useful empty state. Optional **Download covers
+separately** is bounded and may fail because of a host's CORS policy. Missing covers
+always have placeholders; cover failure never invalidates the text catalogue.
+Updating the text snapshot clears its old optional covers. Covers have a separate
+removal action.
+
+Offline search supports English/Urdu/Arabic, recorded aliases, exact accession/ISBN,
+ranking, category/book-language/availability filters, pagination and unvisited book
+details/shelf locations. Switch the interface language locally without changing the
+book-language filter. `/offline/?book=123` opens that edition from the saved snapshot
+on direct navigation or refresh. Availability is **at the last update**, not live.
+
+First download requires internet; each device/browser/origin stores its own copy.
+Storage can be blocked, full, cleared or evicted. This is a convenience copy, **not
+a database backup**. Online removal/hiding cannot instantly erase a prior download
+on another device; an explicit update replaces it with current public records.
+The connectivity indicator reports the browser's opinion separately from actual
+successful downloads. Management/lending and all mutations require internet.
+
+Service workers require a secure origin: HTTPS in production, or localhost/127.0.0.1
+on the same device during development. An ordinary `http://192.168...` laptop LAN
+address on your phone does **not** enable this offline setup. No deployment or HTTPS
+infrastructure is provisioned by Phase 3. See the [MDN service worker guide](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers).
+
+**Laptop test:** run Django, open `/offline/` in Chrome/Edge, download, then use
+DevTools Network → Offline (or stop the local server). Reload `/offline/`, search,
+apply filters, open an unvisited result and switch languages. Return online for an
+update; try an update while unreachable to confirm that the saved snapshot remains.
+For installation, use the browser's Install app/menu option when offered. The in-page
+Install button appears only after a supported browser supplies a real prompt;
+installation is neither automatic nor guaranteed. [MDN installation guidance](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable).
+
+**Samsung phone test without deploying:** with Android platform tools, USB debugging
+and an authorized USB connection, run these on the laptop while Django is running:
+
+```powershell
+adb devices
+adb reverse tcp:8000 tcp:8000
+```
+
+In Chrome on the phone, open **http://localhost:8000/offline/**. This is phone-localhost
+forwarded to the laptop, so it can use the localhost development exception. Download
+successfully, then stop Django or unplug USB and reload the **same URL** to verify
+real offline browsing; simply disabling Wi-Fi while USB forwarding still works is
+not a reliable offline test. Reconnect/restart for updates. Chrome DevTools Android
+port forwarding is an alternative documented by [Chrome](https://developer.chrome.com/docs/devtools/remote-debugging/local-server).
+On an authorized trusted HTTPS installation, open its `/offline/` path instead;
+later test airplane mode and Add to Home screen/Install from the browser menu.
+These phone steps are manual instructions, not a claim that a physical Samsung was
+tested. [Android localhost forwarding](https://developer.android.com/develop/ui/views/layout/webapps/access-local-server).
+
+The offline flow is automated in desktop Chromium with a mobile viewport and RTL.
+Physical Samsung hardware, Samsung Internet, Firefox, Safari and OS installation
+have not been verified. Browser storage/install behavior can vary. The service
+worker controls only `/offline/`, caches an explicit public asset allowlist and
+never queues POSTs or handles private navigation. A private URL opened offline will
+show the browser's network error, never a substitute public page. New workers wait
+for old offline tabs to close; they do not forcibly reload librarian drafts. A failed
+asset update leaves the active worker and IndexedDB catalogue usable. Close all
+offline tabs/windows and reopen online to adopt a waiting interface update.
+
+Implementation, limits, cache policy and manual verification: [docs/OFFLINE.md](docs/OFFLINE.md).
 
 ## Daily use in Phase 2
 
@@ -114,7 +194,10 @@ draft before changing interface language. All fonts and styling remain local.
 # Phase 2 browser flow: starts its own isolated test server/database, no local records used:
 $env:RUMI_BROWSER_TESTS = '1'
 .\.venv\Scripts\python.exe manage.py test tests.test_browser
+.\.venv\Scripts\python.exe manage.py test tests.test_offline_browser
 Remove-Item Env:RUMI_BROWSER_TESTS
+# Node.js is needed only for the JavaScript development checks:
+node --test tests/offline_core.test.mjs
 # Optional Phase 1 public smoke, against a separate local DEMO runserver:
 .\.venv\Scripts\python.exe scripts/browser_smoke.py
 ```
@@ -141,11 +224,11 @@ Official references checked on November 3, 2026: [Django supported releases](htt
 Phase 1 is the working foundation: models, migrations, private admin, welcome, basic paginated search/filters/details, initial translations, display mode, fictional samples and tests.
 
 - **Phase 2 — completed, librarian workflow and search:** mobile dashboard and forms; save/add another; copy duplication and bulk volumes; remember shelf/category; manage shelves/contributors/categories; ranked search; tested Urdu/Arabic normalization; exact accession/ISBN and partial matching; recorded Roman Urdu aliases; deterministic SQLite/PostgreSQL search without a fuzzy extension. Fuzzy matching is not translation.
-- **Phase 3 — offline public catalogue:** PWA manifest, service worker, IndexedDB, explicit full public catalogue download/update, original and normalized text, offline filters/details, connection and last-success status, atomic snapshot publication, optional covers/placeholders. Never cache auth, admin, loans or borrower data. First download needs internet; browser storage can be cleared. Offline browsing only; edits/lending need internet.
+- **Phase 3 — completed, offline public catalogue:** PWA manifest, service worker, IndexedDB, explicit full public catalogue download/update, original and normalized text, offline filters/details, connection and last-success status, atomic snapshot publication, optional covers/placeholders. Never cache auth, admin, loans or borrower data. First download needs internet; browser storage can be cleared. Offline browsing only; edits/lending need internet.
 - **Phase 4 — practical extras:** custom private issue/return workflow, validated optional WhatsApp enquiry links with title/accession/URL, stable copy QR destinations across translated routes, private printable labels, public catalogue CSV export and a separate documented private backup process.
 - **Phase 5 — assistance, launch and polish:** optional Open Library/Google Books metadata suggestions with server timeouts/limits/validation/error handling, explicit approval and source attribution, no silent overwrite and no blocking browsing/manual entry; SEO, public-only sitemap/metadata/security; verify current free-plan allowances and permitted usage; production verification on dedicated Neon/PostgreSQL and Vercel. Never enable paid services.
 
-Phase 2 custom book/copy/volume entry, metadata screens and deterministic multilingual search are complete. Offline support, custom loan screens, WhatsApp, QR/CSV, metadata lookup and deployment remain **planned**. See [project handoff](docs/PROJECT_STATUS.md).
+Phases 1–3 are complete, including public offline browsing/search after an explicit successful download. Custom loan screens, WhatsApp, QR/CSV, metadata lookup and deployment remain **planned**. See [project handoff](docs/PROJECT_STATUS.md).
 
 ## GitHub
 
