@@ -1,0 +1,14 @@
+.venv/
+.env
+.env.*
+!.env.example
+*.sqlite3
+*.sqlite3-*
+__pycache__/
+*.py[cod]
+staticfiles/
+.ruff_cache/
+test-results/
+*.log
+*.dump
+backups/

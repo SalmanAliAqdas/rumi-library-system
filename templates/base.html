@@ -1,0 +1,13 @@
+{% load static i18n library_ui %}{% get_current_language as lang %}
+<!doctype html>
+<html lang="{{ lang }}" dir="{% if lang == 'ur' or lang == 'ar' %}rtl{% else %}ltr{% endif %}">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Rumi Library — explore a personal collection of books in English, Urdu and Arabic."><title>{% block title %}{{ library.name }}{% endblock %}</title><link rel="stylesheet" href="{% static 'css/library.css' %}"><script src="{% static 'js/library.js' %}" defer></script></head>
+<body class="{% if display_mode %}display-mode{% endif %}">
+<a class="skip" href="#main">{% ui 'skip' %}</a>
+<header class="site-header wrap"><a class="brand" href="{% url 'home' %}{% if display_mode %}?display=1{% endif %}"><span class="brand-mark" aria-hidden="true">ر</span><span><strong>{% if lang == 'ar' %}{{ library.name_ar }}{% else %}{{ library.name }}{% endif %}</strong><small lang="ur" dir="rtl">{{ library.name_ur }}</small></span></a>
+<nav aria-label="Main"><a href="{% url 'search' %}{% if display_mode %}?display=1{% endif %}">{% ui 'catalog' %}</a><button type="button" id="display-toggle">{% if display_mode %}{% ui 'exit_display' %}{% else %}{% ui 'display' %}{% endif %}</button><button type="button" id="fullscreen" hidden>{% ui 'fullscreen' %}</button></nav>
+<form action="{% url 'set_language' %}" method="post" class="language-switch">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><label class="sr-only" for="interface-language">Interface language</label><select id="interface-language" name="language"><option value="en" {% if lang == 'en' %}selected{% endif %}>English</option><option value="ur" {% if lang == 'ur' %}selected{% endif %}>اردو</option><option value="ar" {% if lang == 'ar' %}selected{% endif %}>العربية</option></select><button type="submit" aria-label="Change interface language">↵</button></form></header>
+{% if demo_mode %}<div class="demo-banner">{% ui 'demo' %}</div>{% endif %}
+<main id="main">{% block content %}{% endblock %}</main>
+<footer class="wrap site-footer"><div><strong>{{ library.name }}</strong><p>{% ui 'footer' %}</p></div><span>RumiWare</span><a class="librarian" href="{% url 'admin:index' %}">{% ui 'librarian' %} ↗</a></footer>
+</body></html>
