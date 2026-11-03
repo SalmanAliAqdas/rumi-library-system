@@ -1,0 +1,15 @@
+{% extends 'base.html' %}{% load library_ui %}
+{% block title %}{% ui 'librarian' %} · {{ library.name }}{% endblock %}
+{% block content %}
+<div class="wrap librarian-area">
+  <nav class="management-nav" aria-label="{% ui 'librarian' %}">
+    <a href="{% url 'librarian:dashboard' %}">{% ui 'dashboard' %}</a>
+    <a href="{% url 'librarian:book_list' %}">{% ui 'manage_books' %}</a>
+    <a href="{% url 'admin:index' %}">{% ui 'admin' %} ↗</a>
+    <a href="{% url 'search' %}">{% ui 'catalog' %} ↗</a>
+    {% if request.user.is_authenticated %}<form action="{% url 'librarian:logout' %}" method="post">{% csrf_token %}<button class="text-button">{% ui 'logout' %}</button></form>{% endif %}
+  </nav>
+  {% if messages %}<div class="notices" aria-live="polite">{% for message in messages %}<p class="notice {{ message.tags }}">{{ message }}</p>{% endfor %}</div>{% endif %}
+  {% block librarian_content %}{% endblock %}
+</div>
+{% endblock %}

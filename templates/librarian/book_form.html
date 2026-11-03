@@ -1,0 +1,12 @@
+{% extends 'librarian/base.html' %}{% load library_ui %}
+{% block librarian_content %}
+<div class="form-heading"><p class="eyebrow">{{ library.name }}</p><h1>{% ui heading %}</h1><p>{% ui 'edition_scope' %}</p></div>
+<form method="post" class="entry-form book-entry" data-draft-form>{% csrf_token %}{% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+{% include 'librarian/form_errors.html' %}{% for field in form.main_fields %}<div class="field">{{ field.as_field_group }}</div>{% endfor %}
+{% if adding %}<fieldset><legend>{% ui 'first_copy' %}</legend>{% include 'librarian/form_errors.html' with form=copy_form %}{% for field in copy_form.visible_fields %}<div class="field">{{ field.as_field_group }}</div>{% endfor %}</fieldset>{% endif %}
+<div class="draft-links"><p>{% ui 'missing_record' %}</p><a href="{% url 'librarian:metadata_add' 'shelves' %}" target="_blank" rel="noopener">+ {% ui 'shelf' %} <span class="sr-only">{% ui 'new_tab' %}</span> ↗</a><a href="{% url 'librarian:metadata_add' 'categories' %}" target="_blank" rel="noopener">+ {% ui 'categories' %} <span class="sr-only">{% ui 'new_tab' %}</span> ↗</a><a href="{% url 'librarian:metadata_add' 'contributors' %}" target="_blank" rel="noopener">+ {% ui 'contributors' %} <span class="sr-only">{% ui 'new_tab' %}</span> ↗</a><button type="submit" name="intent" value="refresh" formnovalidate class="text-button">{% ui 'refresh_choices' %}</button></div>
+<details {% if form.errors %}open{% endif %}><summary>{% ui 'optional' %}</summary>{% for field in form.optional_fields %}<div class="field">{{ field.as_field_group }}</div>{% endfor %}</details>
+<p class="muted">{% ui 'remembered' %}</p><p class="muted">{% ui 'draft_notice' %}</p>
+<div class="form-actions"><button name="intent" value="save">{% ui 'save' %}</button>{% if adding %}<button name="intent" value="another" class="secondary">{% ui 'save_another' %}</button>{% endif %}<a href="{% if book %}{% url 'librarian:book_detail' book.pk %}{% else %}{% url 'librarian:book_list' %}{% endif %}">{% ui 'cancel' %}</a></div>
+</form>
+{% endblock %}

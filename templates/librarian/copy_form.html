@@ -1,0 +1,3 @@
+{% extends 'librarian/base.html' %}{% load library_ui %}
+{% block librarian_content %}<h1>{% ui heading %}</h1><h2 dir="auto">{{ book.title }}</h2>{% if copy %}<p><bdi>{{ copy.accession }}</bdi></p>{% endif %}<p>{% ui 'copy_scope' %}</p>
+<form method="post" class="entry-form">{% csrf_token %}{% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}{% include 'librarian/form_errors.html' %}{% for field in form.visible_fields %}<div class="field">{{ field.as_field_group }}</div>{% endfor %}<div class="form-actions"><button>{% ui 'save' %}</button><a href="{% url 'librarian:book_detail' book.pk %}">{% ui 'cancel' %}</a></div></form>{% endblock %}

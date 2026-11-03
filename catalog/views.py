@@ -2,7 +2,9 @@ from django.core.paginator import Paginator
 from django.db.models import Count, Exists, OuterRef, Prefetch, Q
 from django.shortcuts import get_object_or_404, render
 
+from .forms import SearchForm
 from .models import Category, Copy, Edition, Language, Loan
+from .search import ranked_books
 
 
 def public_copies():
@@ -44,37 +46,34 @@ def home(request):
     )
 
 
+def detail(request, pk):
+    return render(request, "catalog/detail.html", {"book": get_object_or_404(public_editions(), pk=pk)})
+
+
 def search(request):
-    books = public_editions()
-    query = request.GET.get("q", "").strip()[:200]
-    if query:
-        matching_copy = Copy.objects.filter(is_public=True, accession__icontains=query).values("edition_id")
-        books = books.filter(
-            Q(title__icontains=query)
-            | Q(aliases__icontains=query)
-            | Q(contributors__name__icontains=query)
-            | Q(categories__name__icontains=query)
-            | Q(categories__name_ur__icontains=query)
-            | Q(categories__name_ar__icontains=query)
-            | Q(isbn__icontains=query)
-            | Q(pk__in=matching_copy)
-        ).distinct()
-    category = request.GET.get("category", "")
-    language = request.GET.get("language", "")
-    if category:
-        books = books.filter(categories__slug=category)
-    if language:
-        books = books.filter(languages__code=language)
+    form = SearchForm(request.GET)
+    results = []
+    if form.is_valid():
+        data = form.cleaned_data
+        books = public_editions()
+        if data["category"]:
+            books = books.filter(categories__slug=data["category"])
+        if data["language"]:
+            books = books.filter(languages__code=data["language"])
+        results = ranked_books(books.distinct(), data["q"], availability=data["availability"])
     parameters = request.GET.copy()
-    parameters.pop("page", None)
+    for key in list(parameters):
+        if key not in {"q", "category", "language", "availability", "display"}:
+            parameters.pop(key)
+        else:
+            parameters[key] = parameters[key][:200]
     return render(
         request,
         "catalog/search.html",
         {
-            "page_obj": Paginator(books.distinct(), 12).get_page(request.GET.get("page")),
-            "query": query,
-            "selected_category": category,
-            "selected_language": language,
+            "page_obj": Paginator(results, 12).get_page(request.GET.get("page", "")[:10]),
+            "search_form": form,
+            "query": request.GET.get("q", "")[:200],
             "parameters": parameters.urlencode(),
             "categories": Category.objects.filter(edition__copies__is_public=True).distinct(),
             "languages": Language.objects.filter(edition__copies__is_public=True).distinct(),
@@ -82,5 +81,5 @@ def search(request):
     )
 
 
-def detail(request, pk):
-    return render(request, "catalog/detail.html", {"book": get_object_or_404(public_editions(), pk=pk)})
+def permission_denied(request, exception):
+    return render(request, "403.html", status=403)

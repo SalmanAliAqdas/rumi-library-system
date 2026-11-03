@@ -17,7 +17,7 @@ class CatalogTests(TestCase):
     def setUpTestData(cls):
         cls.shelf = Shelf.objects.create(label="A")
         cls.book = Edition.objects.create(title="Quiet gardens", aliases="Bagh", isbn="123456")
-        cls.book.languages.add(Language.objects.create(code="ur", name="اردو"))
+        cls.book.languages.add(Language.objects.get_or_create(code="ur", defaults={"name": "اردو"})[0])
         cls.category = Category.objects.create(slug="nature", name="Nature")
         cls.book.categories.add(cls.category)
         Contribution.objects.create(

@@ -1,0 +1,3 @@
+{% extends 'librarian/base.html' %}{% load library_ui %}
+{% block librarian_content %}<p class="eyebrow">{% ui kind %}</p><h1>{% if record %}{% ui 'edit' %}{% else %}{% ui 'add_record' %}{% endif %}</h1><p>{% ui 'keep_records' %}</p>
+<form method="post" class="entry-form">{% csrf_token %}{% include 'librarian/form_errors.html' %}{% for field in form %}<div class="field">{{ field.as_field_group }}</div>{% endfor %}<div class="form-actions"><button>{% ui 'save' %}</button><a href="{% url 'librarian:metadata_list' kind %}">{% ui 'cancel' %}</a></div></form>{% endblock %}

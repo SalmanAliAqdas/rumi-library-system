@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.db.models import F, Q
@@ -46,9 +47,18 @@ class Category(models.Model):
         return self.name
 
 
+class LanguageManager(models.Manager):
+    def get_by_natural_key(self, code):
+        return self.get(code=code)
+
+
 class Language(models.Model):
     code = models.CharField(max_length=12, unique=True)
     name = models.CharField(max_length=60)
+    objects = LanguageManager()
+
+    def natural_key(self):
+        return (self.code,)
 
     def __str__(self):
         return self.name
@@ -118,6 +128,7 @@ class Copy(models.Model):
         ordering = ["accession"]
 
     def save(self, *args, **kwargs):
+        self.clean()
         if self.pk:
             original = type(self).objects.get(pk=self.pk).accession
             if self.accession != original:
@@ -134,6 +145,14 @@ class Copy(models.Model):
                 super().save(*args, **kwargs)
         else:
             super().save(*args, **kwargs)
+
+    def clean(self):
+        if self.pk and not self.is_public:
+            was_public = type(self).objects.filter(pk=self.pk, is_public=True).exists()
+            if was_public and self.loans.filter(returned_date__isnull=True).exists():
+                from .templatetags.library_ui import ui
+
+                raise ValidationError({"is_public": ui("loan_visibility")})
 
     @property
     def available(self):
@@ -167,3 +186,14 @@ class Loan(models.Model):
 
     def __str__(self):
         return f"Loan {self.pk} · {self.copy.accession}"
+
+
+class Submission(models.Model):
+    """An atomic receipt for a signed, user/action-scoped create request."""
+
+    token = models.UUIDField(primary_key=True, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    action = models.CharField(max_length=80)
+    edition = models.ForeignKey(Edition, on_delete=models.PROTECT, null=True)
+    accessions = models.JSONField(default=list)
+    created_at = models.DateTimeField(auto_now_add=True)

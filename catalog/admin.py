@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from .models import Category, Contribution, Contributor, Copy, Edition, Language, LibrarySettings, Loan, Shelf
+from .templatetags.library_ui import ui
 
 
 class ContributionInline(admin.TabularInline):
@@ -46,5 +47,15 @@ class LoanAdmin(admin.ModelAdmin):
     autocomplete_fields = ["copy"]
 
 
-admin.site.register([LibrarySettings, Shelf, Category, Language])
+class RetainedTagAdmin(admin.ModelAdmin):
+    def has_delete_permission(self, request, obj=None):
+        # Keep tagging metadata editable without exposing a cascading delete action.
+        return False
+
+    def get_fieldsets(self, request, obj=None):
+        return [(None, {"fields": self.get_fields(request, obj), "description": ui("keep_records")})]
+
+
+admin.site.register([Category, Language], RetainedTagAdmin)
+admin.site.register([LibrarySettings, Shelf])
 admin.site.site_header = "Rumi Library · Librarian"

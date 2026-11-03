@@ -1,0 +1,4 @@
+{% load library_ui %}
+<nav class="pagination" aria-label="{% ui 'page_navigation' %}">
+{% if page_obj.has_previous %}<a href="?{{ parameters }}&page={{ page_obj.previous_page_number }}">← {% ui 'previous' %}</a>{% endif %}<span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a href="?{{ parameters }}&page={{ page_obj.next_page_number }}">{% ui 'next' %} →</a>{% endif %}
+</nav>

@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% load library_ui %}
+{% block content %}<section class="wrap login-area">
+<p class="eyebrow">{{ library.name }}</p><h1>{% ui 'login' %}</h1><p>{% ui 'permission_denied' %}</p>
+<form method="post" class="entry-form">{% csrf_token %}{% include 'librarian/form_errors.html' %}
+{% for field in form %}<div class="field">{{ field.as_field_group }}</div>{% endfor %}
+{% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}<button>{% ui 'login' %}</button></form>
+</section>{% endblock %}

@@ -1,0 +1,5 @@
+{% extends 'librarian/base.html' %}{% load library_ui %}
+{% block librarian_content %}<h1>{% ui 'add_volumes' %}</h1><h2 dir="auto">{{ book.title }}</h2><p>{% ui 'volume_help' %}</p>
+<form method="post" class="entry-form">{% csrf_token %}{% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}{% include 'librarian/form_errors.html' %}{% for field in form.visible_fields %}{% if field.name != 'labels' or preview or form.labels.value %}<div class="field">{{ field.as_field_group }}</div>{% endif %}{% endfor %}
+{% if preview %}<p class="notice">{% ui 'preview' %}: {{ form.cleaned_data.volume_labels|length }} {% ui 'copies' %}</p><ol class="volume-preview">{% for volume in form.cleaned_data.volume_labels %}<li><bdi>{{ volume }}</bdi> · {% ui 'shelf' %}: <bdi>{{ form.cleaned_data.shelf }}</bdi></li>{% endfor %}</ol>{% endif %}
+<div class="form-actions"><button name="intent" value="preview" class="secondary">{% ui 'preview' %}</button>{% if preview %}<button name="intent" value="confirm">{% ui 'confirm_volumes' %}</button>{% endif %}<a href="{% url 'librarian:book_detail' book.pk %}">{% ui 'cancel' %}</a></div></form>{% endblock %}

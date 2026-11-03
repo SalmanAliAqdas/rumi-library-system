@@ -1,6 +1,8 @@
 from django import template
 from django.utils.translation import get_language
 
+from catalog.management_labels import LABELS as MANAGEMENT_LABELS
+
 register = template.Library()
 
 # A small, explicit Phase 1 UI catalogue. Admin uses Django's built-in translations.
@@ -89,6 +91,8 @@ LABELS = {
     "edition": ("Edition", "اشاعت", "الطبعة"),
     "year": ("Year", "سال", "السنة"),
 }
+
+LABELS.update(MANAGEMENT_LABELS)
 
 
 @register.simple_tag

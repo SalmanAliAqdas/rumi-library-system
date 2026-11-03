@@ -1,0 +1,4 @@
+{% extends 'librarian/base.html' %}{% load library_ui %}
+{% block librarian_content %}<div class="section-heading"><h1>{% ui kind %}</h1><a class="button" href="{% url 'librarian:metadata_add' kind %}">+ {% ui 'add_record' %}</a></div><p class="muted">{% ui 'keep_records' %}</p>
+<form class="filters"><label class="sr-only" for="metadata-q">{% ui 'search' %}</label><input id="metadata-q" name="q" maxlength="200" value="{{ query }}"><button>{% ui 'search' %}</button></form>
+<ul class="record-list">{% for record in page_obj %}<li><div><strong dir="auto">{% if kind == 'categories' %}{{ record.display_name }}{% else %}{{ record }}{% endif %}</strong>{% if kind == 'shelves' %}<p>{{ record.copy_count }} {% ui 'copies' %}</p>{% endif %}</div><a href="{% url 'librarian:metadata_edit' kind record.pk %}">{% ui 'edit' %} →</a></li>{% empty %}<li>{% ui 'empty_records' %}</li>{% endfor %}</ul>{% include 'librarian/pagination.html' %}{% endblock %}

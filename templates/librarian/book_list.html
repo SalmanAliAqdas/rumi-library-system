@@ -1,0 +1,7 @@
+{% extends 'librarian/base.html' %}{% load library_ui %}
+{% block librarian_content %}
+<div class="section-heading"><h1>{% ui 'manage_books' %}</h1><a class="button" href="{% url 'librarian:book_add' %}">+ {% ui 'add_book' %}</a></div>
+{% include 'librarian/search_filters.html' with management_filters=True %}<p class="muted">{{ page_obj.paginator.count }} {% ui 'results' %}</p>
+<ul class="record-list">{% for book in page_obj %}<li><div><a href="{% url 'librarian:book_detail' book.pk %}"><strong lang="{{ book.original_language }}" dir="auto">{{ book.title }}</strong></a><p>{% for copy in book.search_copies %}<bdi>{{ copy.accession }}</bdi>{% if not forloop.last %} · {% endif %}{% endfor %}</p></div><a href="{% url 'librarian:book_detail' book.pk %}">{% ui 'edit' %} →</a></li>{% empty %}<li>{% ui 'no_results' %}</li>{% endfor %}</ul>
+{% include 'librarian/pagination.html' %}
+{% endblock %}
