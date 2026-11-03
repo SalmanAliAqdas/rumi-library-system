@@ -50,6 +50,22 @@ def detail(request, pk):
     return render(request, "catalog/detail.html", {"book": get_object_or_404(public_editions(), pk=pk)})
 
 
+def copy_detail(request, accession):
+    from .copy_links import copy_url, whatsapp_url
+
+    copy = get_object_or_404(public_copies().select_related("edition"), accession=accession)
+    return render(
+        request,
+        "catalog/copy.html",
+        {
+            "copy": copy,
+            "book": copy.edition,
+            "public_url": copy_url(copy),
+            "whatsapp_url": whatsapp_url(copy),
+        },
+    )
+
+
 def search(request):
     form = SearchForm(request.GET)
     results = []

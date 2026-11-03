@@ -3,6 +3,7 @@ from django.utils.translation import get_language
 
 from catalog.management_labels import LABELS as MANAGEMENT_LABELS
 from catalog.offline_labels import LABELS as OFFLINE_LABELS
+from catalog.practical_labels import LABELS as PRACTICAL_LABELS
 
 register = template.Library()
 
@@ -95,8 +96,16 @@ LABELS = {
 
 LABELS.update(MANAGEMENT_LABELS)
 LABELS.update(OFFLINE_LABELS)
+LABELS.update(PRACTICAL_LABELS)
 
 
 @register.simple_tag
 def ui(key):
     return LABELS.get(key, (key, key, key))[{"en": 0, "ur": 1, "ar": 2}.get(get_language(), 0)]
+
+
+@register.simple_tag
+def whatsapp_link(copy):
+    from catalog.copy_links import whatsapp_url
+
+    return whatsapp_url(copy)

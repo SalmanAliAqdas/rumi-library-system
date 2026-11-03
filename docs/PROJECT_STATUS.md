@@ -1,4 +1,103 @@
-# Project status — Phase 3
+# Project status — Phase 4
+
+Date: November 3, 2026 (Asia/Karachi). Phase 4 only; no deployment, infrastructure,
+real lending, messages, backups or restores performed. Earlier phase notes below
+are historical.
+
+## Phase 4 completed
+
+- `/librarian/loans/`: private searchable/paginated active loans, overdue filter,
+  searchable copy picker, issue form, confirmed POST return and paginated private
+  history at `/librarian/copies/<accession>/loans/`. History links also appear in
+  Manage books. The existing Loan model, partial unique active-loan constraint,
+  signed user/action retry receipts and atomic transactions are reused. PostgreSQL
+  copy row locking serializes competing issues; database uniqueness remains the
+  final safeguard. Returns use one atomic conditional UPDATE, avoiding SQLite
+  read-to-write lock upgrades. Dates use Asia/Karachi; admin shares date validation.
+  Returns retain history; repeated returns and same-token issue retries are safe.
+- Staff/model permissions on every GET/POST; CSRF and no-store headers retained.
+  Loan lists/history require view edition/copy/loan; issue also requires add loan,
+  return also requires change loan. Labels/CSV require view edition/copy. Existing
+  superusers already have permissions. Borrowers/contacts remain private.
+- Immutable accession routes `/copies/<accession>/`, independent of language/title/
+  shelf, public visibility checks and saved offline edition links. Absolute URLs
+  use validated SITE_URL origins, never request Host headers. Public book URLs and
+  snapshot schema remain compatible; public availability comes from active loans.
+- Optional WhatsApp links on public book/copy pages use the existing library setting
+  with the existing environment fallback. Missing/invalid numbers hide links. Each
+  copy has its own translated, encoded title/accession/volume/canonical-URL message.
+  International shape validation cannot verify a real WhatsApp account. Links never
+  automatically send or reserve. Internet requirements appear online and offline.
+- `/librarian/labels/`: shelf/search selection, 1–24 distinct visible copies per
+  preview, generated SVG QR codes (Segno 1.6.6, BSD, no transitive dependencies),
+  black/white, four-module quiet zones, 34 mm QR size, explicit destinations,
+  multilingual titles and A4 browser print/PDF CSS. Local/private IP and known
+  preview addresses warn; unconfigured SITE_URL warns. Set a stable domain before
+  permanent labels. Arbitrary temporary custom domains cannot be recognized.
+- `/librarian/public-catalog.csv`: explicitly public-catalog-only data, one visible
+  copy per row, UTF-8 BOM, proper CSV quoting and apostrophe formula protection.
+  Hidden copies, loan history, borrower data and private settings are excluded.
+  This is not a database backup. Navigation and dashboard describe its purpose.
+- All new labels/errors/empty states in English, Urdu and Arabic. Local fonts,
+  visible focus, labelled field validation, mixed-script identifiers and responsive
+  forms retained. Offline code still caches only its explicit public allowlist;
+  labels, exports, lending/auth and all mutations remain network-only. Update the
+  saved snapshot explicitly to refresh historical availability.
+- No schema changes or migrations. Existing migrations/inventory preserved. Run
+  `python -m pip install -r requirements-dev.txt`, `python manage.py migrate`, then
+  `python manage.py runserver` using `.venv\Scripts\python.exe` on Windows. Keep
+  existing `.env`; fill in SITE_URL and optional WhatsApp number yourself.
+
+Usage/configuration: README Phase 4 section. Separate private backup/restore plan:
+`docs/BACKUPS.md`, with official Neon guidance checked November 3, 2026. SQLite
+stopped-copy procedure and future direct PostgreSQL dumps to a separate empty test
+target are documentation only. Provider history is plan-limited and not a substitute
+for private backups; no hosted database or account was accessed.
+
+## Phase 4 verification and limits
+
+- Full suite with Chromium enabled: **82 tests discovered, 80 passed on SQLite,
+  2 PostgreSQL concurrency tests skipped**. All six browser cases passed: the
+  existing librarian flow, four offline cases and the new Phase 4 flow. The new
+  browser case uses isolated fictional records, checks login → issue → public
+  borrowed state → confirmation/return → public available state, inspects the
+  WhatsApp destination without opening it, exercises Urdu/Arabic mobile forms,
+  previews labels, generates an A4 PDF and downloads multilingual UTF-8 CSV.
+- Meaningful new server tests cover direct GET/POST permission checks, CSRF,
+  dates/application timezone and admin model validation, signed tokens/retries,
+  active-loan database uniqueness, transaction rollback, overdue/search/pagination,
+  stable/hidden copy links, public/snapshot/export borrower privacy, snapshot
+  availability updates, WhatsApp encoding/settings, canonical URLs, label batch
+  validation/QR destination and SVG view box, CSV safety and worker exclusions.
+- Django system checks, migration consistency and applied-migration checks passed;
+  no migration changes. Ruff lint/format, pip dependency check, static collection,
+  Node syntax for the changed script and all **5 Node offline tests** passed.
+  Translation completeness and generated JS parity pass in the Django suite;
+  no gettext compilation applies to this Python label catalogue. Generated offline
+  labels were rebuilt with `scripts/build_offline_assets.py`.
+- Browser checks initially caught mobile RTL search sizing and visual QR scaling;
+  both were fixed. Original copy-edit link ordering was preserved for compatibility.
+  The offline cover fixture now supplies an explicit mismatched CORS origin because
+  mocked responses can otherwise receive a permissive header. Final tests passed
+  with the genuine CORS rejection behavior retained. Print/mobile screenshots and
+  test PDF are ignored artifacts; the label print screenshot was visually reviewed.
+
+PostgreSQL is not available locally: SQLite cannot establish production concurrency.
+Two gated PostgreSQL tests cover accession allocation and competing issue/token
+retries; both must run against a separately authorized disposable database before
+production. Physical print/scanning, native speaker review, physical phones and
+non-Chromium browsers remain manual checks. No actual WhatsApp message was sent.
+Browser PDF generation verifies layout, not a physical printer or phone camera.
+
+## Next phase (current)
+
+**Phase 5: metadata assistance, SEO, launch hardening and deployment preparation.**
+Keep suggestions optional, attributed and explicitly approved before overwriting
+metadata. PostgreSQL concurrency, private restore drills and production checks
+remain required before launch. Provisioning and deployment require separate user
+authorization. Do not begin Phase 5 automatically.
+
+## Historical Phase 3 handoff
 
 Date: November 3, 2026 (Asia/Karachi). Scope: local implementation only. No infrastructure provisioned, no Neon/Vercel projects touched, no deployment configuration created.
 
@@ -78,17 +177,16 @@ No PostgreSQL server or dedicated test connection is available locally. SQLite d
 
 Search intentionally scans the filtered, prefetched catalogue in Python before pagination, suitable for this small installation but linear in catalogue size. There is no fuzzy or transliteration path; Roman Urdu requires recorded aliases. Public UI labels use `catalog/templatetags/library_ui.py` plus `catalog/management_labels.py`, database branding/categories and Django built-in translations. Native speaker review remains useful. More book languages remain configurable in admin; new scripts may require suitable local fonts. Session defaults do not persist across logout. Changing interface language reloads forms; the UI advises saving drafts first. The restricted initial librarian is the existing superuser; README lists permissions for other staff accounts.
 
-Offline/PWA public browsing is complete in Phase 3. Metadata lookup, WhatsApp, QR labels, CSV, sitemap and deployment remain planned. Basic private loans remain editable in admin; the comfortable issue/return UI is Phase 4. External covers are optional; missing/failed images use local placeholders. No upload storage has been introduced. Submission receipts are private and never exported offline. Fresh create forms intentionally allow additional copies; replay protection applies to the same submitted token.
+Offline/PWA public browsing was completed in Phase 3. Phase 4 now adds private loan screens, WhatsApp, QR labels and CSV. Metadata lookup, sitemap and deployment remain planned. External covers are optional; missing/failed images use local placeholders. No upload storage has been introduced. Submission receipts are private and never exported offline. Fresh create forms intentionally allow additional copies; replay protection applies to the same submitted token.
 
 Production requires explicit environment values, PostgreSQL and HTTPS; Vercel without explicit production mode fails startup. Review actual Vercel proxy/static/runtime behavior and free-plan allowances in Phase 5. Official references are linked in README. No unverified deployment file is supplied.
 
 Local SQLite data will not appear in Neon. Before full collection entry, follow the private backup/export/import and accession-sequence validation plan in README; avoid mixing samples and real inventory.
 
-## Exact next phase
+## Historical next-phase note
 
-Implement **Phase 4 only** when requested: basic private issue/return workflow; optional validated WhatsApp enquiries containing title/accession/URL (hidden without a valid number); stable copy QR destinations across interface languages and private printable labels; public-only CSV export plus a documented separate private backup procedure. Keep loan/borrower data out of offline snapshots/caches and public exports. Editing/lending remain online. Do not begin metadata enrichment or production deployment/provisioning in Phase 4.
-
-The full five-phase roadmap and PowerShell setup, checks, private migration path and GitHub steps are in README.md.
+The Phase 3 handoff requested Phase 4. Phase 4 is now complete; the current next
+phase is Phase 5 as described at the top of this document.
 
 ## GitHub and continuing workflow
 

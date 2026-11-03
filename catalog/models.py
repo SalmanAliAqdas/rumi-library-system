@@ -170,6 +170,22 @@ class Loan(models.Model):
     due_date = models.DateField(null=True, blank=True)
     returned_date = models.DateField(null=True, blank=True)
 
+    def clean(self):
+        from .templatetags.library_ui import ui
+
+        errors = {}
+        today = timezone.localdate()
+        if self.issue_date and self.issue_date > today:
+            errors["issue_date"] = ui("issue_future")
+        if self.due_date and self.issue_date and self.due_date < self.issue_date:
+            errors["due_date"] = ui("due_before_issue")
+        if self.returned_date and (
+            self.returned_date > today or (self.issue_date and self.returned_date < self.issue_date)
+        ):
+            errors["returned_date"] = ui("return_before_issue")
+        if errors:
+            raise ValidationError(errors)
+
     class Meta:
         constraints = [
             models.UniqueConstraint(

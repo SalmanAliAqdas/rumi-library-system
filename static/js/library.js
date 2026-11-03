@@ -20,3 +20,5 @@ document.querySelectorAll('.book-art img').forEach(img => {
   img.addEventListener('error', () => img.remove());
   if (img.complete) ready();
 });
+
+document.getElementById('print-labels')?.addEventListener('click', () => window.print());

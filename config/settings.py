@@ -3,7 +3,8 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import dj_database_url
-from django.core.exceptions import ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured, ValidationError
+from django.core.validators import URLValidator
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -18,7 +19,22 @@ SECRET_KEY = os.getenv("SECRET_KEY", "development-only-insecure-key")
 ALLOWED_HOSTS = [x.strip() for x in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if x.strip()]
 CSRF_TRUSTED_ORIGINS = [x.strip() for x in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",") if x.strip()]
 SITE_URL = os.getenv("SITE_URL", "http://127.0.0.1:8000")
+SITE_URL_CONFIGURED = bool(os.getenv("SITE_URL"))
 WHATSAPP_NUMBER = os.getenv("WHATSAPP_NUMBER", "")
+try:
+    URLValidator(schemes=["http", "https"])(SITE_URL)
+    site_parts = urlparse(SITE_URL)
+    if (
+        site_parts.username
+        or site_parts.password
+        or site_parts.query
+        or site_parts.fragment
+        or site_parts.path not in {"", "/"}
+        or len(SITE_URL) > 250
+    ):
+        raise ValueError
+except (ValueError, ValidationError):
+    raise ImproperlyConfigured("SITE_URL must be an HTTP(S) origin without credentials, path or query")
 database_url = os.getenv("DATABASE_URL", "")
 if not DEBUG:
     for variable in ("SECRET_KEY", "DATABASE_URL", "ALLOWED_HOSTS", "CSRF_TRUSTED_ORIGINS", "SITE_URL"):

@@ -271,6 +271,9 @@ class OfflineBrowserTests(StaticLiveServerTestCase):
                 lambda route: route.fulfill(
                     status=200,
                     content_type="image/png",
+                    # Explicit mismatch: Playwright may add a permissive CORS
+                    # header to fulfilled requests when the header is absent.
+                    headers={"access-control-allow-origin": "https://different.invalid"},
                     body=(Path(__file__).parent.parent / "static/offline/icon-192.png").read_bytes(),
                 ),
             )

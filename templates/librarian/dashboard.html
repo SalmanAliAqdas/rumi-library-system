@@ -3,4 +3,4 @@
 <div class="section-heading"><div><p class="eyebrow">{{ library.name }}</p><h1>{% ui 'dashboard' %}</h1></div><a class="button" href="{% url 'librarian:book_add' %}">+ {% ui 'add_book' %}</a></div>
 <div class="dashboard-counts"><div><strong>{{ edition_count }}</strong><span>{% ui 'editions' %}</span></div><div><strong>{{ copy_count }}</strong><span>{% ui 'copies' %}</span></div><div><strong>{{ available_count }}</strong><span>{% ui 'available_copies' %}</span></div><div><strong>{{ loan_count }}</strong><span>{% ui 'active_loans' %}</span></div></div>
 <div class="management-links"><a href="{% url 'librarian:book_list' %}">{% ui 'manage_books' %} →</a><a href="{% url 'librarian:metadata_list' 'shelves' %}">{% ui 'shelves' %} →</a><a href="{% url 'librarian:metadata_list' 'categories' %}">{% ui 'categories' %} →</a><a href="{% url 'librarian:metadata_list' 'contributors' %}">{% ui 'contributors' %} →</a></div>
-{% endblock %}
+<p>{% ui 'csv_help' %}</p>{% endblock %}

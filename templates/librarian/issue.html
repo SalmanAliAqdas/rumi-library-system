@@ -1,0 +1,6 @@
+{% extends 'librarian/base.html' %}{% load library_ui %}
+{% block librarian_content %}<h1>{% ui 'issue_copy' %}</h1>
+<form method="get" class="entry-form"><label for="copy-search">{% ui 'search' %}</label><input id="copy-search" name="q" value="{{ query }}" dir="auto"><button>{% ui 'filter' %}</button></form>
+<form method="post" class="entry-form">{% csrf_token %}{{ form.token }}{% include 'librarian/form_errors.html' %}
+{% for field in form.visible_fields %}<div class="field">{{ field.as_field_group }}</div>{% endfor %}
+<button>{% ui 'issue_copy' %}</button></form>{% endblock %}

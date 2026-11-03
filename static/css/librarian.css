@@ -50,3 +50,34 @@
 [lang=ur] .entry-form [dir=ltr]{font-family:var(--sans);line-height:1.6}
 [lang=ur] .management-nav{font-size:16px;line-height:2.5}
 @media(max-width:700px){.dashboard-counts{grid-template-columns:repeat(2,1fr);gap:12px}.dashboard-counts div{padding:18px}.management-links{grid-template-columns:1fr}.entry-form{padding:20px 16px}.entry-form fieldset{padding:18px 12px}.management-nav{gap:14px;font-size:12px}.management-nav a,.management-nav button{min-height:44px;display:inline-flex;align-items:center}.librarian-area .section-heading{flex-wrap:wrap}.record-list li{align-items:flex-start;flex-direction:column;gap:10px}.record-list li>a{padding-block:6px}.form-actions button{width:100%}.form-actions a{padding:10px 0}.draft-links{padding:15px}.librarian-area h1{font-size:2.3rem}.dashboard-counts span{font-size:12px}}
+
+.entry-form > label { display:block; margin-block:8px; }
+.entry-form > input:not([type=checkbox]):not([type=hidden]), .entry-form > select { display:block; width:100%; max-width:100%; margin-block:8px; }
+.management-nav a { overflow-wrap:anywhere; max-width:100%; }
+.label-sheet { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:4mm; margin-block:1rem; }
+.copy-label { display:flex; align-items:center; gap:3mm; padding:3mm; border:1px solid #222; color:#000; background:#fff; break-inside:avoid; overflow-wrap:anywhere; }
+.copy-label strong { display:block; line-height:2.2; }
+.copy-label p { margin-block:2mm; line-height:2; }
+.copy-label small { display:block; font-size:9pt; line-height:1.6; }
+.qr-code { flex:0 0 34mm; width:34mm; height:34mm; }
+.qr-code svg { width:100%; height:100%; display:block; }
+@media (max-width:700px) { .label-sheet { grid-template-columns:1fr; } }
+@page { size:A4; margin:10mm; }
+@media print {
+  body:has(.label-sheet) { background:#fff; color:#000; }
+  body:has(.label-sheet) .site-header, body:has(.label-sheet) .site-footer,
+  body:has(.label-sheet) .management-nav, body:has(.label-sheet) .label-controls,
+  body:has(.label-sheet) .notices, body:has(.label-sheet) .demo-banner,
+  body:has(.label-sheet) .skip { display:none !important; }
+  body:has(.label-sheet) .wrap { width:100%; max-width:none; margin:0; padding:0; }
+  body:has(.label-sheet) .librarian-area { padding:0; }
+  .label-sheet { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:4mm; margin:0; }
+  .copy-label { min-height:46mm; font-size:11pt; }
+  .copy-label a { color:#000; }
+}
+
+.copy-label > div:last-child { min-width:0; }
+.copy-label [lang=ur] { font-family:Urdu,serif; line-height:2.5; }
+.copy-label [lang=ar] { font-family:Arabic,serif; line-height:1.8; }
+.detail-page { overflow-wrap:anywhere; }
+.copy-list li > div { min-width:0; }

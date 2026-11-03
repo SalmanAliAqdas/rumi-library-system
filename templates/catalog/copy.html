@@ -1,0 +1,12 @@
+{% extends 'base.html' %}{% load library_ui %}
+{% block title %}{{ copy.accession }} · {{ book.title }}{% endblock %}
+{% block content %}<section class="wrap detail-page">
+<a href="{% url 'detail' book.pk %}">{% ui 'about' %}</a>
+<h1 lang="{{ book.original_language }}" dir="auto">{{ book.title }}</h1>
+<p><strong><bdi>{{ copy.accession }}</bdi></strong></p>
+<p>{% ui 'volume' %}: <bdi>{{ copy.volume|default:'—' }}</bdi> · {% ui 'shelf' %}: <bdi>{{ copy.shelf.label }}</bdi></p>
+<p class="availability {% if copy.on_loan %}loaned{% endif %}">{% if copy.on_loan %}{% ui 'on_loan' %}{% else %}{% ui 'available' %}{% endif %}</p>
+{% if whatsapp_url %}<p><a class="button" href="{{ whatsapp_url }}" rel="noopener noreferrer" target="_blank">{% ui 'ask_book' %} · <bdi>{{ copy.accession }}</bdi> ↗</a></p><p>{% ui 'whatsapp_help' %}</p>{% endif %}
+<p><a href="{% url 'offline' %}?book={{ book.pk }}">{% ui 'saved_copy' %}</a></p>
+<p><bdi>{{ public_url }}</bdi></p>
+</section>{% endblock %}

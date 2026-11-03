@@ -24,9 +24,10 @@ The seed command explicitly creates 20 fictional editions and 23 copies, includi
 
 ## Upgrade an existing checkout
 
-Keep your existing `.env` and database. No dependency changes are required.
+Keep your existing `.env` and database. Phase 4 adds the pinned BSD-licensed Segno QR library.
 
 ```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
 .\.venv\Scripts\python.exe manage.py migrate
 .\.venv\Scripts\python.exe manage.py runserver
 ```
@@ -116,6 +117,80 @@ offline tabs/windows and reopen online to adopt a waiting interface update.
 
 Implementation, limits, cache policy and manual verification: [docs/OFFLINE.md](docs/OFFLINE.md).
 
+## Practical features — Phase 4
+
+No new migrations are introduced. Install the updated requirements, run `migrate`
+to confirm the existing migrations are current, then start the server. Existing
+inventory, accessions and loan history are preserved; do not reset or seed real data.
+
+- **Loans:** open `/librarian/loans/`, choose **Issue a copy**, search by accession
+  or book title, select the exact copy/volume and enter borrower name, optional
+  contact, issue date and optional due date. Issue dates cannot be in the future;
+  due dates cannot precede issue dates. Dates use Asia/Karachi. Search and paginate
+  active loans; **Overdue only** uses due dates strictly before today. Choose
+  **Mark returned**, review the confirmation, then submit. Return date is today.
+  Repeated issue submissions with the same signed form token and repeated returns
+  are safe. A newly opened issue form intentionally allows a new loan after return.
+  Copy links in Loans and **Private copy loan history** in Manage books show retained
+  history. Django admin remains compatible and uses the same model/date constraints.
+- **Permissions:** active staff status plus `view_edition`, `view_copy`, `view_loan`
+  for loan lists/history; add `add_loan` to issue and `change_loan` to return. Labels
+  and public CSV need `view_copy` and `view_edition`. The existing superuser has all
+  permissions. Every endpoint checks permissions, regardless of navigation visibility.
+- **WhatsApp:** optionally set **Library settings → whatsapp_number** in admin or
+  `WHATSAPP_NUMBER` in the private `.env` (restart after environment changes). A
+  nonempty library setting takes precedence. Use international country-code format,
+  preferably `+` followed by digits; spaces, parentheses and hyphens are accepted.
+  Missing/invalid values hide the link. Validation checks international number shape,
+  not whether an account exists. No number is supplied by the application. Each
+  public book/copy link names its accession and prefills the selected interface's
+  message with title, volume and canonical URL. It opens WhatsApp without reserving
+  or automatically sending. Sending requires internet; browser connectivity status
+  cannot establish WhatsApp reachability. No API or messaging service is used.
+- **Permanent copy URLs:** `/copies/RL-000001/` (use your actual accession) is
+  independent of title, shelf and interface language. Only visible copies resolve.
+  The destination shows shelf, volume, availability and language selection. Its
+  saved-catalog link opens `/offline/?book=<edition-id>` where downloaded copies
+  can be found. Public copy pages themselves require internet; bookmark the saved
+  edition link before disconnecting. Old book URLs continue working.
+- **Labels:** open `/librarian/labels/`, search/filter by shelf, select 1–24 visible
+  copies on the current page, then **Preview labels**. The preview displays every
+  QR destination. Set `SITE_URL` to the final public HTTPS **origin** in `.env`:
+  no path, query, fragment or credentials. Absolute links always use that setting,
+  never request Host headers. Localhost and recognized temporary preview domains
+  display a warning. Treat any changing domain as temporary even if unrecognized.
+  Test printing locally is allowed; wait for a stable public domain before making
+  permanent labels. QR codes encode only copy URLs with a four-module quiet zone,
+  black on white, printed at 34 mm. Use **Print / Save as PDF**, A4, 100% scale and
+  disable browser headers/footers. Check one actual print with a phone before a
+  batch; long titles wrap and can increase label height. No server PDF service.
+- **Public catalog CSV export:** `/librarian/public-catalog.csv`, also linked in the
+  private navigation. One row per visible physical copy, with public metadata,
+  current availability and permanent URL. Hidden records and borrower details are
+  excluded. Excel-friendly UTF-8 includes a BOM; CSV quoting preserves commas,
+  quotes and newlines. Potential spreadsheet formula fields get an initial apostrophe,
+  including suspicious whitespace prefixes; this intentionally changes those cells
+  for safety. Keep downloaded exports outside Git. This is **not a database backup**.
+
+All new interfaces have English, Urdu and Arabic labels, RTL/mixed-script support,
+CSRF protection and private no-store responses. No lending, label or export URL is
+in the service-worker allowlist; non-GET requests are never queued or replayed.
+Public snapshots continue to derive availability from active loans. Update the
+saved catalog explicitly after lending/returns to see the changed historical state.
+
+Separate private procedures and limitations: [backup and restore](docs/BACKUPS.md).
+No backup or real restore was performed by Phase 4. Production PostgreSQL concurrency
+and restoration still require a dedicated disposable database before launch.
+
+Phase 4 verification: 82 Django tests with Chromium enabled, 80 passed on SQLite
+and 2 PostgreSQL concurrency tests skipped. All six isolated browser cases passed,
+including issue/return, public availability, WhatsApp URL inspection (no message),
+multilingual CSV, mobile RTL, label preview/print PDF and existing offline flows.
+Five Node offline tests, Django system/migration checks, lint/format, dependency
+checks and static collection passed. Translation completeness/generated label
+parity tests pass; this label catalogue needs no gettext compilation. Physical
+printing/scanning, native speaker review and other browsers remain manual checks.
+
 ## Daily use in Phase 2
 
 Sign in at **http://127.0.0.1:8000/librarian/** with the superuser you created.
@@ -149,7 +224,7 @@ There is no public registration or default password. Logout is a CSRF-protected 
    Use a separate edition if a volume has different metadata.
 5. **Edit edition** changes title/metadata/credits for all its copies. **Edit this
    copy** changes only its shelf, volume designation or visibility; the accession
-   cannot be edited. To hide a copy on active loan, first record its return in admin.
+   cannot be edited. To hide a copy on active loan, first record its return in Loans or admin.
 6. **Manage shelves, categories and contributors:** list/search/add/edit from the
    dashboard. Empty shelves are valid. Correct referenced records by editing them;
    these screens offer no deletion. Django protects referenced shelves/contributors,
@@ -166,8 +241,7 @@ view/add/change on their own model. Login/logout require staff plus view edition
 Every endpoint also checks active staff status. Hiding navigation is never the
 permission boundary; requests without model permissions receive 403.
 
-Loan issue/return remains in Django admin; the custom loan workflow is planned for
-Phase 4. Public pages and search never expose borrower records. The management area
+Loan issue/return is now available in the custom librarian area and Django admin. Public pages and search never expose borrower records. The management area
 sets no-store/private cache headers. Display mode still hides the librarian link on
 public pages and supports user-triggered fullscreen.
 
@@ -191,10 +265,11 @@ draft before changing interface language. All fonts and styling remain local.
 .\.venv\Scripts\python.exe manage.py collectstatic --noinput
 # Optional browser tooling, once:
 .\.venv\Scripts\python.exe -m playwright install chromium
-# Phase 2 browser flow: starts its own isolated test server/database, no local records used:
+# Browser flows: isolated test server/database, no local records used:
 $env:RUMI_BROWSER_TESTS = '1'
 .\.venv\Scripts\python.exe manage.py test tests.test_browser
 .\.venv\Scripts\python.exe manage.py test tests.test_offline_browser
+.\.venv\Scripts\python.exe manage.py test tests.test_practical_browser
 Remove-Item Env:RUMI_BROWSER_TESTS
 # Node.js is needed only for the JavaScript development checks:
 node --test tests/offline_core.test.mjs
@@ -215,7 +290,7 @@ Migration procedure for a future phase:
 3. Provision a separate Neon project/database only when explicitly authorized. Set `DATABASE_URL` privately, run `migrate`, then `loaddata backups/catalog.json`. Restore `AccessionSequence` along with copies so the next number is greater than all imported accessions. Django deserialization preserves accessions. Do not bulk-create new copies or use QuerySet updates to change accession identifiers; new records must use model save/admin.
 4. Validate counts, visibility, multilingual text, availability, next accession generation and the PostgreSQL constraint/concurrency tests on a disposable database. Recreate the superuser with `createsuperuser`; this application-only export does not transfer credentials/sessions. Submission receipts are excluded because they reference local users and are only short-lived retry protection; full private backups still retain them. Stop all writes/old forms during transfer and use a fresh production SECRET_KEY so old signed forms cannot be replayed. Retain the private backup until restoration has been verified.
 
-Production requires `DJANGO_ENV=production`, a strong SECRET_KEY, a PostgreSQL DATABASE_URL, explicit ALLOWED_HOSTS, HTTPS CSRF_TRUSTED_ORIGINS and HTTPS SITE_URL. Missing settings fail startup; SQLite is never a production fallback. The optional WhatsApp setting is reserved for Phase 4. Do not use local filesystem uploads on Vercel.
+Production requires `DJANGO_ENV=production`, a strong SECRET_KEY, a PostgreSQL DATABASE_URL, explicit ALLOWED_HOSTS, HTTPS CSRF_TRUSTED_ORIGINS and HTTPS SITE_URL. Missing settings fail startup; SQLite is never a production fallback. The optional WhatsApp setting enables Phase 4 public enquiries. Do not use local filesystem uploads on Vercel.
 
 Official references checked on November 3, 2026: [Django supported releases](https://www.djangoproject.com/download/) (5.2 LTS supported through April 2028) and [Vercel Django guide](https://vercel.com/docs/frameworks/full-stack/django). No deployment configuration or account changes are made in Phase 1. Recheck official entrypoint, static asset, Python runtime and free-plan requirements before Phase 5 deployment; run migrations as a controlled release action, never on every request. Run `check --deploy` with real production settings before launch. No paid services are enabled.
 
@@ -225,10 +300,10 @@ Phase 1 is the working foundation: models, migrations, private admin, welcome, b
 
 - **Phase 2 — completed, librarian workflow and search:** mobile dashboard and forms; save/add another; copy duplication and bulk volumes; remember shelf/category; manage shelves/contributors/categories; ranked search; tested Urdu/Arabic normalization; exact accession/ISBN and partial matching; recorded Roman Urdu aliases; deterministic SQLite/PostgreSQL search without a fuzzy extension. Fuzzy matching is not translation.
 - **Phase 3 — completed, offline public catalogue:** PWA manifest, service worker, IndexedDB, explicit full public catalogue download/update, original and normalized text, offline filters/details, connection and last-success status, atomic snapshot publication, optional covers/placeholders. Never cache auth, admin, loans or borrower data. First download needs internet; browser storage can be cleared. Offline browsing only; edits/lending need internet.
-- **Phase 4 — practical extras:** custom private issue/return workflow, validated optional WhatsApp enquiry links with title/accession/URL, stable copy QR destinations across translated routes, private printable labels, public catalogue CSV export and a separate documented private backup process.
+- **Phase 4 — completed, practical extras:** custom private issue/return workflow, validated optional WhatsApp enquiry links with title/accession/URL, stable copy QR destinations across translated routes, private printable labels, public catalogue CSV export and a separate documented private backup process.
 - **Phase 5 — assistance, launch and polish:** optional Open Library/Google Books metadata suggestions with server timeouts/limits/validation/error handling, explicit approval and source attribution, no silent overwrite and no blocking browsing/manual entry; SEO, public-only sitemap/metadata/security; verify current free-plan allowances and permitted usage; production verification on dedicated Neon/PostgreSQL and Vercel. Never enable paid services.
 
-Phases 1–3 are complete, including public offline browsing/search after an explicit successful download. Custom loan screens, WhatsApp, QR/CSV, metadata lookup and deployment remain **planned**. See [project handoff](docs/PROJECT_STATUS.md).
+Phases 1–4 are complete, including offline browsing, private lending, WhatsApp links, labels and public CSV. Metadata assistance, SEO, launch hardening and deployment preparation are Phase 5. Deployment requires separate authorization. See [project handoff](docs/PROJECT_STATUS.md).
 
 ## GitHub
 

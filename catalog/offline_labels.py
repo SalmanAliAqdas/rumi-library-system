@@ -1,3 +1,5 @@
+from .practical_labels import LABELS as PRACTICAL_LABELS
+
 LABELS = {
     "snapshot_limit_exceeded": (
         "The complete public catalogue exceeds the configured download limit. Nothing was truncated or replaced. Ask the librarian to review the limit.",
@@ -142,3 +144,6 @@ LABELS = {
         "هذا الكتاب غير موجود في الفهرس المحفوظ. ارجع إلى الكتب المحفوظة أو حدّث أثناء الاتصال.",
     ),
 }
+
+
+LABELS["whatsapp_help"] = PRACTICAL_LABELS["whatsapp_help"]

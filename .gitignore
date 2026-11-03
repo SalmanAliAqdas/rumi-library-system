@@ -12,3 +12,9 @@ test-results/
 *.log
 *.dump
 backups/
+exports/
+*.csv
+*.bak
+*.backup
+*.sql
+*.db

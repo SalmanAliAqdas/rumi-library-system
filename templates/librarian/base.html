@@ -5,6 +5,8 @@
   <nav class="management-nav" aria-label="{% ui 'librarian' %}">
     <a href="{% url 'librarian:dashboard' %}">{% ui 'dashboard' %}</a>
     <a href="{% url 'librarian:book_list' %}">{% ui 'manage_books' %}</a>
+    {% if perms.catalog.view_loan %}<a href="{% url 'librarian:loans' %}">{% ui 'loans' %}</a>{% endif %}
+    {% if perms.catalog.view_copy and perms.catalog.view_edition %}<a href="{% url 'librarian:labels' %}">{% ui 'labels' %}</a><a href="{% url 'librarian:export_csv' %}">{% ui 'csv_export' %}</a>{% endif %}
     <a href="{% url 'admin:index' %}">{% ui 'admin' %} ↗</a>
     <a href="{% url 'search' %}">{% ui 'catalog' %} ↗</a>
     {% if request.user.is_authenticated %}<form action="{% url 'librarian:logout' %}" method="post">{% csrf_token %}<button class="text-button">{% ui 'logout' %}</button></form>{% endif %}

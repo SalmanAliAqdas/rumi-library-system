@@ -1,9 +1,15 @@
 from django.urls import path
 
-from . import librarian
+from . import lending, librarian
 
 app_name = "librarian"
 urlpatterns = [
+    path("loans/", lending.loan_list, name="loans"),
+    path("loans/issue/", lending.issue, name="issue"),
+    path("loans/<int:pk>/return/", lending.return_loan, name="return"),
+    path("copies/<str:accession>/loans/", lending.loan_list, name="loan_history"),
+    path("labels/", lending.labels, name="labels"),
+    path("public-catalog.csv", lending.export_csv, name="export_csv"),
     path("login/", librarian.LibrarianLoginView.as_view(), name="login"),
     path("logout/", librarian.LibrarianLogoutView.as_view(), name="logout"),
     path("", librarian.dashboard, name="dashboard"),

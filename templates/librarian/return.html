@@ -1,0 +1,3 @@
+{% extends 'librarian/base.html' %}{% load library_ui %}
+{% block librarian_content %}<h1>{% ui 'return_copy' %}</h1><h2 dir="auto">{{ loan.copy.edition.title }}</h2><p><bdi>{{ loan.copy.accession }}</bdi> · <bdi>{{ loan.borrower_name }}</bdi></p><p>{% ui 'confirm_return' %}</p>
+{% if error %}<p role="alert">{{ error }}</p>{% endif %}<form method="post" class="entry-form">{% csrf_token %}<button>{% ui 'return_copy' %}</button><a href="{% url 'librarian:loans' %}">{% ui 'cancel' %}</a></form>{% endblock %}
