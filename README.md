@@ -73,12 +73,12 @@ Offline support, custom entry/loan screens, WhatsApp, QR/CSV, metadata lookup an
 
 ## GitHub
 
-No remote is assumed. Create an **empty** repository called `rumi-library` in your GitHub account (do not initialize README, license or .gitignore). Then:
+The project repository is [SalmanAliAqdas/rumi-library-system](https://github.com/SalmanAliAqdas/rumi-library-system). The local `origin` points to its HTTPS URL. After each completed and verified phase, review the changes for secrets/private data, commit and push. Preserve existing history; do not force-push.
 
 ```powershell
-$RepositoryUrl = Read-Host 'Paste the HTTPS URL of your new empty GitHub repository'
-git remote add origin $RepositoryUrl
-git push -u origin main
+git status
+git fetch origin
+git push origin main
 ```
 
-If GitHub CLI is installed and authenticated, `gh repo create rumi-library --private --source . --remote origin --push` is an alternative. Choose public visibility later if desired after reviewing the source; no database or secrets belong in the repository.
+`main` tracks `origin/main` after the initial push. The GitHub repository is public; no database, secrets or private borrower records belong in its source or history. See `AGENTS.md` for the continuing phase workflow.

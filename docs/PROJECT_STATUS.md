@@ -39,4 +39,22 @@ Local SQLite data will not appear in Neon. Before full collection entry, follow 
 
 Implement **Phase 2 only** when requested: mobile-friendly private dashboard/forms; save/add another; add another physical copy; bulk volumes; remember sensible shelf/category defaults; manage metadata; improve ranked search with tested Urdu/Arabic normalization, exact accession/ISBN matching, partial matching and recorded Roman Urdu aliases. PostgreSQL fuzzy matching is optional and must retain SQLite functionality. Keep permissions server-side and borrower data private. Do not begin offline/deployment work as part of Phase 2.
 
-The full five-phase roadmap and PowerShell setup, checks, private migration path and GitHub steps are in README.md. No GitHub origin existed at initialization; final commit and push status are reported in the handoff.
+The full five-phase roadmap and PowerShell setup, checks, private migration path and GitHub steps are in README.md.
+
+## GitHub and continuing workflow
+
+The user authorized connecting and pushing to the public repository
+`https://github.com/SalmanAliAqdas/rumi-library-system.git`. It was empty when
+inspected. Preserve the original Phase 1 commit `27d4c29`; no history rewrite is
+needed. The initial audit scanned all 46 tracked paths and the complete existing
+commit history for sensitive paths and common credential patterns. No secrets,
+actual environment files, local databases or private record exports were found;
+`.env.example` contains placeholders and the record values in tests/demo seeding
+are fictional. Ignore checks confirmed environment files, the local SQLite
+database and backup exports are excluded.
+
+After every completed and verified phase, commit and push to this repository.
+This continuing user instruction is also recorded in `AGENTS.md`. Fetch and inspect
+remote changes before integration; preserve unrelated work and existing commits.
+Do not start the next phase automatically. Push results and any blockers are
+reported in the session handoff.
