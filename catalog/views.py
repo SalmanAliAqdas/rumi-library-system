@@ -99,3 +99,11 @@ def search(request):
 
 def permission_denied(request, exception):
     return render(request, "403.html", status=403)
+
+
+def server_error(request):
+    # Independent of database/context processors, usable during database outages.
+    from django.http import HttpResponse
+    from django.template.loader import get_template
+
+    return HttpResponse(get_template("500.html").render(), status=500)

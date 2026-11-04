@@ -1,0 +1,21 @@
+{% load library_ui %}
+<details {% if lookup_message or lookup_results or lookup_form.errors %}open{% endif %}><summary>{% ui 'lookup_heading' %} · Open Library</summary>
+<p>{% ui 'lookup_notice' %}</p>
+<p>{% ui 'lookup_contributors' %}</p>
+{% if book.metadata_source %}<p><a href="{{ book.metadata_source }}" target="_blank" rel="noopener noreferrer">Open Library</a> · {{ book.metadata_retrieved_at }}</p>{% endif %}
+{{ lookup_form.non_field_errors }}
+<div class="field"><label for="id_lookup_isbn">ISBN</label>{{ lookup_form.lookup_isbn }}{{ lookup_form.lookup_isbn.errors }}</div>
+<div class="field"><label for="id_lookup_title">{% ui 'title' %}</label>{{ lookup_form.lookup_title }}{{ lookup_form.lookup_title.errors }}</div>
+<div class="field"><label for="id_lookup_author">{% ui 'author' %}</label>{{ lookup_form.lookup_author }}{{ lookup_form.lookup_author.errors }}</div>
+<button name="intent" value="lookup" formnovalidate>{% ui 'lookup_search' %}</button>
+{% if lookup_message %}<p role="status">{{ lookup_message }}</p>{% endif %}
+{% for result in lookup_results %}<fieldset>
+<legend dir="auto">{{ result.fields.title }}</legend><p dir="auto">{{ result.contributors|join:', ' }} · {{ result.date }}</p>
+<a href="{{ result.source }}" target="_blank" rel="noopener noreferrer">Open Library ↗</a>
+{% if result.fields.cover_url %}<img src="{{ result.fields.cover_url }}" alt="" loading="lazy" referrerpolicy="no-referrer" width="100">{% endif %}
+{% for name, value, missing in result.choices %}<div class="field"><label><input type="checkbox" name="approve" value="{{ name }}" {% if missing %}checked{% endif %}> {% ui name %}</label><p dir="auto">{{ value }}</p></div>{% endfor %}
+<p><label><input type="checkbox" name="replace_confirm">{% ui 'lookup_replace' %}</label></p>
+<button type="submit" name="intent" value="apply_metadata" formnovalidate data-suggestion="{{ result.token }}">{% ui 'lookup_apply' %}</button>
+</fieldset>{% endfor %}
+<input type="hidden" name="suggestion" id="metadata-suggestion">
+</details>

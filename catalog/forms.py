@@ -50,6 +50,7 @@ class LibrarianAuthenticationForm(LocalizedFields, AuthenticationForm):
 
 
 class EditionForm(LocalizedFields, forms.ModelForm):
+    metadata_token = forms.CharField(required=False, max_length=20000, widget=forms.HiddenInput)
     authors = forms.ModelMultipleChoiceField(Contributor.objects.order_by("name", "pk"), required=False)
     unknown_author = forms.BooleanField(required=False)
     translators = forms.ModelMultipleChoiceField(Contributor.objects.order_by("name", "pk"), required=False)
@@ -76,6 +77,7 @@ class EditionForm(LocalizedFields, forms.ModelForm):
         widgets = {"aliases": forms.Textarea(attrs={"rows": 3}), "summary": forms.Textarea(attrs={"rows": 4})}
 
     def __init__(self, *args, **kwargs):
+        self.lookup_user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
         languages = list(Language.objects.order_by("code").values_list("code", "name"))
         if self.instance.pk and self.instance.original_language not in {item[0] for item in languages}:
@@ -94,6 +96,17 @@ class EditionForm(LocalizedFields, forms.ModelForm):
 
     def clean(self):
         data = super().clean()
+        if data.get("metadata_token"):
+            from django.core import signing
+
+            from .metadata import read_result
+
+            try:
+                result = read_result(data["metadata_token"], self.lookup_user, max_age=None)
+                self.instance.metadata_source = result["source"]
+                self.instance.metadata_retrieved_at = result["retrieved"]
+            except (signing.BadSignature, KeyError, TypeError, ValueError, AttributeError):
+                self.add_error("metadata_token", label("lookup_expired"))
         authors = data.get("authors")
         if not authors and not data.get("unknown_author"):
             self.add_error("authors", label("author_required"))

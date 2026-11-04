@@ -84,6 +84,8 @@ class Edition(models.Model):
     year = models.PositiveSmallIntegerField(null=True, blank=True)
     summary = models.TextField(blank=True)
     cover_url = models.URLField(blank=True)
+    metadata_source = models.URLField(blank=True, editable=False)
+    metadata_retrieved_at = models.DateTimeField(null=True, blank=True, editable=False)
     is_demo = models.BooleanField(default=False, editable=False)
     demo_key = models.CharField(max_length=60, null=True, blank=True, unique=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -213,3 +215,11 @@ class Submission(models.Model):
     edition = models.ForeignKey(Edition, on_delete=models.PROTECT, null=True)
     accessions = models.JSONField(default=list)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class LookupGate(models.Model):
+    """One shared outgoing-provider reservation; contains no search or personal data."""
+
+    id = models.PositiveSmallIntegerField(primary_key=True, default=1)
+    next_at = models.DateTimeField(default=timezone.now)
+    count = models.PositiveSmallIntegerField(default=0)

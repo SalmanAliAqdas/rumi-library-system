@@ -1,4 +1,107 @@
-# Project status — Phase 4
+# Project status — Phase 5
+
+Date: November 5, 2026 (Asia/Karachi). Phase 5 implemented locally. No services
+provisioned, accounts inspected, hosted databases accessed, deployment, real
+lending, messages, real exports/backups or restores performed. Earlier phase notes
+below are historical. Launch is a separately authorized next action.
+
+## Completed
+
+- Optional Open Library ISBN/title/author lookup inside Add a book/Edit edition,
+  bounded to one ISBN edition or five work suggestions; multilingual inputs,
+  fixed server endpoints, no redirects/arbitrary URL fetches, socket/deadline/byte
+  limits, sanitized plain descriptions, validated numeric cover IDs and shared
+  database request reservations. Google Books remains disabled, no API keys/billing.
+- Explicit field preview/selection; empty fields preselected, nonempty replacement
+  requires confirmation, Apply changes only the draft and Save validates normally.
+  Contributors are reviewed and added/selected manually with existing role controls.
+  Copies/accessions/shelves/volumes/visibility/loans cannot be changed by lookup.
+  Last source/retrieval time retained privately; fields remain editable. Manual
+  entry works through outages. See docs/METADATA.md for edition/licensing caveats.
+- Configured-origin canonical and page-specific multilingual metadata/Open Graph,
+  local fallback image, paginated public-only sitemap/index and robots, private
+  noindex/no-store and noindex for query variants. Cookie language selection shares
+  URLs, so no invented hreflang routes. Existing 404 retained; minimal translated
+  production 500 and database-independent health endpoint added. No fabricated
+  structured ratings/reviews/inventory. Existing QR URLs preserved.
+- Django upgraded to 5.2.19 LTS; production validates required settings and rejects
+  SQLite, wildcard hosts/origins and invalid SITE_URL. Psycopg TCP with short-lived
+  connections, pooling-compatible cursors and certificate verification/system trust.
+  Vercel-only trusted HTTPS proxy, deliberate opt-in HSTS, bounded form bodies,
+  CSP/referrer/permissions headers, privacy-filtered application error logging.
+- Both login forms share database-backed username-bucket throttles; no claims about
+  in-memory counters. Provider reservations are also shared. Exact optional free
+  Vercel WAF rule and limitations documented. PostgreSQL concurrency still gated.
+- Native Vercel Django configuration with Python 3.13, 30s function duration, static
+  asset collection/CDN, bundle exclusions and **Git auto-deployment disabled**.
+  No request/build migrations, seeds, default admin or filesystem persistence.
+- Concrete schema-aware SQLite to separate PostgreSQL procedure in docs/TRANSFER.md:
+  private source backup, natural language keys, preserved identifiers/relationships,
+  fresh permissions, PK sequence versus AccessionSequence handling, dry rehearsal,
+  full record hashes/counts, visibility/loan checks and untouched-source rollback.
+  `audit_catalog` is read-only and emits no borrower details. No transfer write
+  command added; deliberate migrate/loaddata remains an operator action.
+- docs/DEPLOYMENT.md covers exact account/env/release/static/admin/domain/backup
+  steps, free-plan limits checked November 5, 2026, eligibility caveats, remaining
+  WAF setup and post-deployment checks. A commercial RumiWare promotion may not
+  qualify for Hobby; verify before launch, never silently enable billing.
+
+## Verification actually completed
+
+- Full browser-enabled Django suite: **99 discovered, 96 passed on SQLite,
+  3 PostgreSQL-only tests skipped**. All **7 Chromium browser cases passed**:
+  existing management, lending/return/public availability/labels/CSV and offline
+  cases plus new login → add draft → mocked lookup → missing-field approval →
+  preserve manual title → save → public search/detail. New lookup preview also
+  checked at a 390px mobile viewport in Urdu/Arabic RTL, without overflow.
+  Public mobile and Urdu preview screenshots visually reviewed. Mocked providers
+  are deliberate; this is not live provider availability/quota verification.
+- After final sitemap pagination/logging changes, **17 targeted server/translation
+  tests passed**, including a new 1,004-URL sitemap boundary test and log privacy.
+  Total current discovery is 100 tests; the 99-test full run preceded that added
+  regression. All final changes were covered by targeted checks.
+- Django system checks, migration consistency, applied-migration check, Ruff lint/
+  formatting, pip dependency consistency, Node JS syntax and **5 Node offline tests**
+  passed. Translation completeness/parity tests passed; Python label catalogs need
+  no gettext compilation. Local fonts/PWA assets retained.
+- Safe synthetic production configuration: `check --deploy` exit 0 with the single
+  expected **security.W004** warning because HSTS is deliberately zero; production
+  `collectstatic` passed (128 copied, 19 unchanged, 437 post-processed). Synthetic
+  settings tests verify missing requirements/SQLite rejection and connection policy;
+  no real PostgreSQL connection was attempted for these checks.
+- Additive migration 0004 applied locally without changing existing inventory
+  counts: **20 editions, 23 copies, 0 loans, 4 shelves, 3 contributors**. No reset,
+  seed or earlier migration replacement. Local data remains separate from Neon.
+- Initial new browser failures were missing test reference-language setup and an
+  overly exact accessible-link selector; corrected, then targeted and full browser
+  runs passed. Initial logging startup import ordering was corrected before checks.
+
+## Remaining launch gates and continuation
+
+No separate authorized PostgreSQL test target/client tools are available here.
+SQLite cannot establish PostgreSQL concurrency, pooling, TLS, sequence restoration
+or hosted behavior. Run all three PostgreSQL cases (accessions, loans, provider
+reservation), full target migrations and private restore rehearsal before launch.
+Actual Vercel build/CDN/proxy/HTTPS/WAF and Neon account allowances remain unverified.
+Physical phones, other browsers, OS install, actual print/QR scan and native-speaker
+review remain manual. Offline downloads cannot be remotely revoked; rank search
+still scans a home-size catalogue in Python. Logs deliberately omit exception
+bodies; platform access logs need private retention/access settings.
+
+Next user inputs/actions: separate launch authorization, confirmation of personal
+noncommercial use, separate Rumi Neon/Vercel targets and final public address.
+Provide credentials directly in private environment/account settings, never chat.
+Use docs/DEPLOYMENT.md and docs/TRANSFER.md; do not touch other Neon projects.
+Real books can be entered gradually. Wait for the final public SITE_URL before
+permanent QR labels. No later phase or automatic deployment is started.
+
+Local commands: install requirements-dev.txt, `python manage.py migrate`,
+`python manage.py check`, `python manage.py runserver` using .venv/Scripts/python.exe.
+The local migration is already applied in this workspace. Existing .env is retained.
+Git completion is recorded by the Phase 5 commit and remote branch; inspect history
+rather than embedding a self-referential commit hash in this document.
+
+# Historical Phase 4 handoff
 
 Date: November 3, 2026 (Asia/Karachi). Phase 4 only; no deployment, infrastructure,
 real lending, messages, backups or restores performed. Earlier phase notes below
@@ -89,7 +192,7 @@ production. Physical print/scanning, native speaker review, physical phones and
 non-Chromium browsers remain manual checks. No actual WhatsApp message was sent.
 Browser PDF generation verifies layout, not a physical printer or phone camera.
 
-## Next phase (current)
+## Historical next-phase note
 
 **Phase 5: metadata assistance, SEO, launch hardening and deployment preparation.**
 Keep suggestions optional, attributed and explicitly approved before overwriting

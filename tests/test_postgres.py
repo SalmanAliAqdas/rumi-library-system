@@ -9,6 +9,34 @@ from django.test import TransactionTestCase
 from catalog.models import Copy, Edition, Shelf
 
 
+@skipUnless(connection.vendor == "postgresql", "PostgreSQL lookup gate requires a disposable database")
+class PostgresLookupTests(TransactionTestCase):
+    def test_shared_reservation_allows_only_one_concurrent_request(self):
+        from threading import Barrier
+
+        from catalog.metadata import LookupError, reserve_request
+        from catalog.models import LookupGate
+
+        LookupGate.objects.create(pk=1)
+        barrier = Barrier(2)
+
+        def reserve():
+            close_old_connections()
+            try:
+                barrier.wait(timeout=10)
+                try:
+                    reserve_request()
+                    return True
+                except LookupError:
+                    return False
+            finally:
+                close_old_connections()
+
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            results = list(pool.map(lambda _: reserve(), range(2)))
+        self.assertEqual(sorted(results), [False, True])
+
+
 @skipUnless(
     connection.vendor == "postgresql", "PostgreSQL lending concurrency requires a disposable database"
 )

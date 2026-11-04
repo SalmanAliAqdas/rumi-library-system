@@ -1,0 +1,2 @@
+{% load static library_ui i18n %}{% get_current_language as lang %}
+<!doctype html><html lang="{{ lang }}" dir="{% if lang == 'ur' or lang == 'ar' %}rtl{% else %}ltr{% endif %}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Rumi Library · 500</title><link rel="stylesheet" href="{% static 'css/library.css' %}"></head><body><main class="wrap empty"><h1>{% ui 'server_error' %}</h1><a href="/">{% ui 'home' %}</a></main></body></html>

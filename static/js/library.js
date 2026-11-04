@@ -22,3 +22,13 @@ document.querySelectorAll('.book-art img').forEach(img => {
 });
 
 document.getElementById('print-labels')?.addEventListener('click', () => window.print());
+
+document.querySelectorAll('[data-suggestion]').forEach(button => {
+  button.addEventListener('click', () => {
+    document.getElementById('metadata-suggestion').value = button.dataset.suggestion;
+    // Only selected fields in the chosen result are submitted.
+    document.querySelectorAll('[name=approve], [name=replace_confirm]').forEach(input => {
+      input.disabled = !button.closest('fieldset').contains(input);
+    });
+  });
+});

@@ -164,20 +164,24 @@ def announce(request, receipt, created):
 @librarian_required("catalog.add_edition", "catalog.add_copy", "catalog.add_contribution")
 @require_http_methods(["GET", "POST"])
 def book_add(request):
+    from .metadata import draft_action
+
+    posted, lookup_context = draft_action(request)
     action = "edition:add"
     form = EditionForm(
-        request.POST or None,
+        posted,
+        user=request.user,
         initial={
             "categories": request.session.get("last_categories", []),
             "token": issue_token(request.user, action),
         },
     )
     copy_form = CopyForm(
-        request.POST or None,
+        posted,
         prefix="copy",
         initial={"shelf": request.session.get("last_shelf"), "is_public": True},
     )
-    if request.method == "POST" and request.POST.get("intent") != "refresh":
+    if request.method == "POST" and request.POST.get("intent") not in {"refresh", "lookup", "apply_metadata"}:
         valid = form.is_valid()
         valid = copy_form.is_valid() and valid
         token = validate_token(form, request.user, action) if valid else None
@@ -192,31 +196,42 @@ def book_add(request):
                 return redirect("librarian:book_add")
             return redirect("librarian:book_detail", pk=receipt.edition_id)
     # Bound forms retain every draft field; refresh updates choices without saving.
-    if request.POST.get("intent") == "refresh":
+    if request.POST.get("intent") in {"refresh", "lookup", "apply_metadata"}:
         form.errors.clear()
         copy_form.errors.clear()
     return render(
         request,
         "librarian/book_form.html",
-        {"form": form, "copy_form": copy_form, "heading": "add_book", "adding": True},
+        {"form": form, "copy_form": copy_form, "heading": "add_book", "adding": True, **lookup_context},
     )
 
 
 @librarian_required("catalog.change_edition", "catalog.add_contribution", "catalog.delete_contribution")
 @require_http_methods(["GET", "POST"])
 def book_edit(request, pk):
+    from .metadata import draft_action
+
+    posted, lookup_context = draft_action(request)
     book = get_object_or_404(Edition, pk=pk)
-    form = EditionForm(request.POST or None, instance=book)
-    if request.method == "POST" and request.POST.get("intent") != "refresh" and form.is_valid():
+    form = EditionForm(posted, instance=book, user=request.user)
+    if (
+        request.method == "POST"
+        and request.POST.get("intent") not in {"refresh", "lookup", "apply_metadata"}
+        and form.is_valid()
+    ):
         with transaction.atomic():
             book = form.save()
             save_credits(book, form)
         remember(request, categories=form.cleaned_data["categories"])
         messages.success(request, ui("saved"))
         return redirect("librarian:book_detail", pk=book.pk)
-    if request.POST.get("intent") == "refresh":
+    if request.POST.get("intent") in {"refresh", "lookup", "apply_metadata"}:
         form.errors.clear()
-    return render(request, "librarian/book_form.html", {"form": form, "book": book, "heading": "edit_book"})
+    return render(
+        request,
+        "librarian/book_form.html",
+        {"form": form, "book": book, "heading": "edit_book", **lookup_context},
+    )
 
 
 @librarian_required("catalog.add_copy", "catalog.view_edition")

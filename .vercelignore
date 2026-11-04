@@ -1,0 +1,17 @@
+.env*
+!.env.example
+.venv/
+.git/
+db.sqlite3*
+*.sqlite3
+*.sqlite3-*
+backups/
+exports/
+test-results/
+tests/
+*.dump
+*.sql
+*.db
+*.csv
+*.bak
+*.backup

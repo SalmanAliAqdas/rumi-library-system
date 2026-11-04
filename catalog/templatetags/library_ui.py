@@ -3,6 +3,7 @@ from django.utils.translation import get_language
 
 from catalog.management_labels import LABELS as MANAGEMENT_LABELS
 from catalog.offline_labels import LABELS as OFFLINE_LABELS
+from catalog.phase5_labels import LABELS as PHASE5_LABELS
 from catalog.practical_labels import LABELS as PRACTICAL_LABELS
 
 register = template.Library()
@@ -97,6 +98,7 @@ LABELS = {
 LABELS.update(MANAGEMENT_LABELS)
 LABELS.update(OFFLINE_LABELS)
 LABELS.update(PRACTICAL_LABELS)
+LABELS.update(PHASE5_LABELS)
 
 
 @register.simple_tag
@@ -109,3 +111,34 @@ def whatsapp_link(copy):
     from catalog.copy_links import whatsapp_url
 
     return whatsapp_url(copy)
+
+
+@register.simple_tag
+def seo_metadata(request, book, copy, library):
+    from django.contrib.staticfiles.storage import staticfiles_storage
+    from django.utils.html import strip_tags
+
+    from catalog.seo import origin
+
+    lang = get_language()
+    name = getattr(library, f"name_{lang}", "") or library.name
+    route = request.resolver_match.url_name if request.resolver_match else ""
+    public = route in {"home", "search", "detail", "copy_detail"}
+    description = ui("intro")
+    title = name
+    if public and book:
+        title = book.title + (" · " + copy.accession if copy else "") + " · " + name
+        description = strip_tags(book.summary)[:180] or book.title + " · " + name
+    elif route == "search":
+        title = ui("catalog") + " · " + name
+    elif route in {"detail", "copy_detail"}:
+        title = ui("not_found") + " · " + name
+    elif route != "home":
+        title = ui("librarian") + " · " + name
+    return {
+        "title": title,
+        "description": description,
+        "canonical": origin() + request.path if public else "",
+        "image": origin() + staticfiles_storage.url("offline/icon-512.png"),
+        "noindex": not public or bool(request.GET),
+    }

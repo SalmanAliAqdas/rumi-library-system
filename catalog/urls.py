@@ -1,8 +1,11 @@
 from django.urls import path
 
-from . import offline, views
+from . import offline, seo, views
 
 urlpatterns = [
+    path("sitemap.xml", seo.sitemap, name="sitemap"),
+    path("robots.txt", seo.robots, name="robots"),
+    path("health/", seo.health, name="health"),
     path("", views.home, name="home"),
     path("books/", views.search, name="search"),
     path("books/<int:pk>/", views.detail, name="detail"),

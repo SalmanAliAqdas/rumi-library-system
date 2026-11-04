@@ -2,6 +2,47 @@
 
 A personal home library, built with Django templates, local CSS and modest vanilla JavaScript. Public browsing needs no login. The librarian uses a private mobile-friendly dashboard, with Django admin still available. A RumiWare portfolio project; one library per installation.
 
+## Phase 5: assistance and launch preparation
+
+In Add a book or Edit edition, expand **Optional book information**, enter ISBN
+or title/optional author and choose **Find suggestions**. Review Open Library's
+results, select fields and **Apply selected fields to draft**, then review and
+Save. Empty fields are selected by default; replacing filled fields requires
+confirmation. Contributors use the existing add/select controls so roles stay
+explicit. Lookup never changes physical copies or loans. Manual entry works
+through outages. Google Books remains disabled. [Details and provider policy](docs/METADATA.md).
+
+Public pages now have page-specific SEO, configured-origin canonical/Open Graph
+metadata, a local fallback image, public-only paginated sitemap and robots.txt.
+Private pages and search variants are noindex. Cookie-selected languages share
+routes, so no separate translated URLs are advertised. Security hardening includes
+shared database login/provider throttles, CSP, safe production settings and logs,
+and a database-independent `/health/` liveness endpoint.
+
+Upgrade without resetting records:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+.\.venv\Scripts\python.exe manage.py migrate
+.\.venv\Scripts\python.exe manage.py check
+.\.venv\Scripts\python.exe manage.py runserver
+```
+
+The additive Phase 5 migration stores source attribution and shared throttle state;
+existing accessions and history remain intact. Real books can be entered gradually.
+Before full entry/launch, rehearse the [actual data transfer](docs/TRANSFER.md) and
+[private backup/restore](docs/BACKUPS.md) on a separate PostgreSQL target. The
+read-only `python manage.py audit_catalog` compares counts, relationships and
+content digests without printing borrower records. No real backup/export is made
+by installation or startup.
+
+Follow the [Neon/Vercel launch guide](docs/DEPLOYMENT.md) for account eligibility,
+free limits checked November 5, 2026, environment variables, migrations, static
+build, administrator creation and verification. Infrastructure and deployment
+require separate authorization. Git auto-deploy is disabled in `vercel.json`.
+PostgreSQL/TLS/hosted verification remains required before production. Wait for the
+final public SITE_URL before printing permanent QR labels.
+
 ## Windows PowerShell setup
 
 Python 3.12+ is recommended (developed on Python 3.13). From this directory:
@@ -24,7 +65,7 @@ The seed command explicitly creates 20 fictional editions and 23 copies, includi
 
 ## Upgrade an existing checkout
 
-Keep your existing `.env` and database. Phase 4 adds the pinned BSD-licensed Segno QR library.
+Keep your existing `.env` and database. Phase 5 upgrades Django to 5.2.19 and adds an additive metadata/throttling migration. Keep the existing database and migration history.
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
@@ -283,10 +324,10 @@ The Phase 2 browser test creates temporary fictional users and books only in Dja
 
 Local `db.sqlite3` is separate from a future Neon database. Git excludes databases, secrets, backups and generated assets. Before full real entry, validate the private backup/restore/transfer procedure below against a dedicated production-like database. Keep local trials small until that verification is complete; local SQLite is not automatically synchronized with Neon. The Django ORM and checked-in migrations are the only schema authority.
 
-Migration procedure for a future phase:
+Historical outline; use the detailed [Phase 5 transfer procedure](docs/TRANSFER.md) for rehearsal and launch:
 
 1. Stop writes and make a private, verified copy of SQLite. Remove sample data from a separate copy if necessary; never delete real records to reset a demo.
-2. Export application records privately: `python manage.py dumpdata catalog --exclude catalog.submission --natural-foreign --natural-primary --indent 2 --output backups/catalog.json`. This includes **private borrower data**. Never commit it or publish it as a public export. Language natural keys use codes, so existing reference languages are reused even if their IDs differ between databases.
+2. Export application records privately: `python manage.py dumpdata catalog --exclude catalog.submission --exclude catalog.lookupgate --natural-foreign --natural-primary --indent 2 --output backups/catalog.json`. This includes **private borrower data**. Never commit it or publish it as a public export. Language natural keys use codes, so existing reference languages are reused even if their IDs differ between databases.
 3. Provision a separate Neon project/database only when explicitly authorized. Set `DATABASE_URL` privately, run `migrate`, then `loaddata backups/catalog.json`. Restore `AccessionSequence` along with copies so the next number is greater than all imported accessions. Django deserialization preserves accessions. Do not bulk-create new copies or use QuerySet updates to change accession identifiers; new records must use model save/admin.
 4. Validate counts, visibility, multilingual text, availability, next accession generation and the PostgreSQL constraint/concurrency tests on a disposable database. Recreate the superuser with `createsuperuser`; this application-only export does not transfer credentials/sessions. Submission receipts are excluded because they reference local users and are only short-lived retry protection; full private backups still retain them. Stop all writes/old forms during transfer and use a fresh production SECRET_KEY so old signed forms cannot be replayed. Retain the private backup until restoration has been verified.
 
@@ -303,7 +344,7 @@ Phase 1 is the working foundation: models, migrations, private admin, welcome, b
 - **Phase 4 — completed, practical extras:** custom private issue/return workflow, validated optional WhatsApp enquiry links with title/accession/URL, stable copy QR destinations across translated routes, private printable labels, public catalogue CSV export and a separate documented private backup process.
 - **Phase 5 — assistance, launch and polish:** optional Open Library/Google Books metadata suggestions with server timeouts/limits/validation/error handling, explicit approval and source attribution, no silent overwrite and no blocking browsing/manual entry; SEO, public-only sitemap/metadata/security; verify current free-plan allowances and permitted usage; production verification on dedicated Neon/PostgreSQL and Vercel. Never enable paid services.
 
-Phases 1–4 are complete, including offline browsing, private lending, WhatsApp links, labels and public CSV. Metadata assistance, SEO, launch hardening and deployment preparation are Phase 5. Deployment requires separate authorization. See [project handoff](docs/PROJECT_STATUS.md).
+Phases 1–5 are implemented, including optional metadata assistance, public SEO and launch preparation. PostgreSQL and hosted verification remain required before production. Deployment requires separate authorization. See [project handoff](docs/PROJECT_STATUS.md).
 
 ## GitHub
 

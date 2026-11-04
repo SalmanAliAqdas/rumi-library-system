@@ -9,3 +9,4 @@ urlpatterns = [
 ]
 
 handler403 = "catalog.views.permission_denied"
+handler500 = "catalog.views.server_error"

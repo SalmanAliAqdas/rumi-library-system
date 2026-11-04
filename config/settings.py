@@ -1,4 +1,5 @@
 import os
+import re
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -48,6 +49,23 @@ if not DEBUG:
         raise ImproperlyConfigured("Production origins must use HTTPS")
     if "*" in ALLOWED_HOSTS:
         raise ImproperlyConfigured("Production hosts must be explicit")
+    if any(
+        not re.fullmatch(r"[a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?", host) or host.startswith(".")
+        for host in ALLOWED_HOSTS
+    ):
+        raise ImproperlyConfigured("Production hosts must be explicit DNS names")
+    for value in CSRF_TRUSTED_ORIGINS:
+        parsed = urlparse(value)
+        if (
+            parsed.username
+            or parsed.password
+            or parsed.path not in {"", "/"}
+            or parsed.query
+            or parsed.fragment
+            or not parsed.hostname
+            or "*" in value
+        ):
+            raise ImproperlyConfigured("CSRF origins must be explicit HTTPS origins")
 DATABASES = {
     "default": dj_database_url.parse(database_url, conn_max_age=0, ssl_require=not DEBUG)
     if database_url
@@ -76,6 +94,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "catalog.middleware.SecurityBoundaries",
 ]
 ROOT_URLCONF = "config.urls"
 WSGI_APPLICATION = "config.wsgi.application"
@@ -125,8 +144,9 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 SECURE_SSL_REDIRECT = not DEBUG
-SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
-SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
+SECURE_HSTS_SECONDS = int(os.getenv("HSTS_SECONDS", "0")) if not DEBUG else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https") if os.getenv("VERCEL") == "1" else None
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 
@@ -134,3 +154,27 @@ X_FRAME_OPTIONS = "DENY"
 OFFLINE_MAX_EDITIONS = 5000
 OFFLINE_MAX_COPIES = 10000
 OFFLINE_MAX_BYTES = 20 * 1024 * 1024
+
+if DATABASES["default"]["ENGINE"] == "django.db.backends.postgresql":
+    DATABASES["default"]["DISABLE_SERVER_SIDE_CURSORS"] = True
+    DATABASES["default"]["OPTIONS"].update({"connect_timeout": 5})
+    if not DEBUG:
+        DATABASES["default"]["OPTIONS"]["sslmode"] = "verify-full"
+        DATABASES["default"]["OPTIONS"]["sslrootcert"] = "system"
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 256 * 1024
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 300
+
+# Do not send request paths, SQL, exception text or borrower form values to logs.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": True,
+    "formatters": {"safe": {"format": "%(levelname)s application event"}},
+    "filters": {"private": {"()": "catalog.middleware.PrivateLogFilter"}},
+    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "safe", "filters": ["private"]}},
+    "root": {"handlers": ["console"], "level": "WARNING"},
+    "loggers": {
+        "django.request": {"handlers": ["console"], "level": "ERROR", "propagate": False},
+        "django.security": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+    },
+}
