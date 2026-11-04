@@ -3,6 +3,7 @@ import re
 from pathlib import Path
 from urllib.parse import urlparse
 
+import certifi
 import dj_database_url
 from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.core.validators import URLValidator
@@ -160,7 +161,7 @@ if DATABASES["default"]["ENGINE"] == "django.db.backends.postgresql":
     DATABASES["default"]["OPTIONS"].update({"connect_timeout": 5})
     if not DEBUG:
         DATABASES["default"]["OPTIONS"]["sslmode"] = "verify-full"
-        DATABASES["default"]["OPTIONS"]["sslrootcert"] = "system"
+        DATABASES["default"]["OPTIONS"]["sslrootcert"] = certifi.where()
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 256 * 1024
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 300

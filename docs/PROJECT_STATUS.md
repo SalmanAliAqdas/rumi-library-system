@@ -22,6 +22,10 @@ Initial Vercel build failed before dependency installation because a Ruff-only
 pyproject.toml took precedence over requirements.txt. Ruff settings moved to
 ruff.toml, retaining requirements.txt as the only dependency authority. Deployment,
 live verification, private administrator setup and final handoff remain in progress.
+The packaging retry built successfully. Live database routes then exposed missing
+libpq trust roots in Vercel; safe error categories identified TLS verification.
+Pinned Certifi now supplies portable Mozilla CA roots while retaining verify-full;
+neither DEBUG nor certificate verification was weakened.
 
 # Historical Phase 5 handoff
 

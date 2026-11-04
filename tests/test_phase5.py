@@ -221,7 +221,12 @@ class LaunchTests(TestCase):
                 raise ValueError("Private borrower fixture")
             except ValueError:
                 logger.exception("postgresql://private-credential-fixture")
+            try:
+                raise ValueError("certificate verify failed: Private borrower fixture")
+            except ValueError:
+                logger.exception("postgresql://private-credential-fixture")
             self.assertIn("ERROR", stream.getvalue())
+            self.assertIn("tls_verification", stream.getvalue())
             self.assertNotIn("Private borrower", stream.getvalue())
             self.assertNotIn("private-credential", stream.getvalue())
         finally:

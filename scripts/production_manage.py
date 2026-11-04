@@ -2,11 +2,11 @@
 
 import argparse
 import os
-import ssl
 import sys
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
+import certifi
 from dotenv import dotenv_values
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -38,19 +38,11 @@ def configure(target):
     for name, value in values.items():
         if value is not None:
             os.environ[name] = value
+    parameters = dict(parse_qsl(destination.query))
+    parameters.update(sslmode="verify-full", sslrootcert=certifi.where())
+    os.environ["DATABASE_URL"] = urlunsplit(destination._replace(query=urlencode(parameters)))
     os.environ["DJANGO_SETTINGS_MODULE"] = "config.settings"
     os.environ.pop("VERCEL", None)
-    if os.name == "nt" and not os.environ.get("SSL_CERT_FILE"):
-        # libpq/OpenSSL cannot directly consume the Windows certificate store.
-        certificates = ssl.create_default_context().get_ca_certs(binary_form=True)
-        if not certificates:
-            raise RuntimeError("Windows trust store is empty; configure a trusted SSL_CERT_FILE.")
-        bundle = ROOT / ".vercel" / "windows-trust.pem"
-        bundle.parent.mkdir(exist_ok=True)
-        bundle.write_text(
-            "".join(ssl.DER_cert_to_PEM_cert(value) for value in certificates), encoding="ascii"
-        )
-        os.environ["SSL_CERT_FILE"] = str(bundle)
     sys.path.insert(0, str(ROOT))
     return values
 
