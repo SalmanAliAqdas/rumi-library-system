@@ -9,7 +9,22 @@ from django.utils import timezone
 
 class PrivateLogFilter(logging.Filter):
     def filter(self, record):
-        record.msg = "application event"
+        category = "general"
+        if record.exc_info and record.exc_info[1]:
+            message = str(record.exc_info[1]).lower()
+            for fragment, safe_category in [
+                ("certificate verify failed", "tls_verification"),
+                ("permission denied", "database_permission"),
+                ("does not exist", "missing_database_object"),
+                ("staticfiles manifest", "static_manifest"),
+                ("could not connect", "database_connection"),
+                ("connection failed", "database_connection"),
+                ("timed out", "timeout"),
+            ]:
+                if fragment in message:
+                    category = safe_category
+                    break
+        record.msg = f"application event ({category})"
         record.args = ()
         record.exc_info = None
         record.exc_text = None

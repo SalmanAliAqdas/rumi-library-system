@@ -169,7 +169,7 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 300
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": True,
-    "formatters": {"safe": {"format": "%(levelname)s application event"}},
+    "formatters": {"safe": {"format": "%(levelname)s %(message)s"}},
     "filters": {"private": {"()": "catalog.middleware.PrivateLogFilter"}},
     "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "safe", "filters": ["private"]}},
     "root": {"handlers": ["console"], "level": "WARNING"},
