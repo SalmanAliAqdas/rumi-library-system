@@ -1,31 +1,119 @@
-# Phase 6 deployment in progress
+# Project status — Phase 6 live deployment
 
-November 5, 2026 (Asia/Karachi). User authorized provisioning and deployment.
-Dedicated Neon project `noisy-bread-19614503` (rumi-library), production branch
-`br-wild-credit-az43c4d3`, verification branch `br-dry-truth-azak0pak`, database
-`rumi_library`. Dedicated Vercel project `prj_jzs3N8jR34Lecm28HUmm7wVp2Kul` in
-team `rumiware1`, linked to SalmanAliAqdas/rumi-library-system. Reserved address:
-https://rumi-library-rumiware1.vercel.app (not yet verified live).
+November 5, 2026 (Asia/Karachi). User authorized this deployment. Public catalog:
+**https://rumi-library.vercel.app/**. Private login:
+**https://rumi-library.vercel.app/librarian/login/**. Room display: `/?display=1`.
+Offline catalog: `/offline/`. Public browsing needs no Vercel authentication.
+The librarian account was created through the user's private interactive terminal;
+no default credentials or password disclosure. A separate temporary restricted
+staff account verifies login/logout, metadata drafts and CSV, then is removed.
 
-Local SQLite contains only 20 marked/recognized fictional editions, 23 copies and
-zero loans. Samples remain local; production starts empty. Existing Neon/Vercel
-projects were not modified. Both accounts are on Free/Hobby; no billing enabled.
-Full SQLite/browser suite: 100 tests, 97 passed, 3 PostgreSQL-only skipped. Four
-dedicated PostgreSQL concurrency/import tests passed without skips. Reviewed
-migrations applied explicitly to verification and empty production databases.
-Production credentials use ignored private local files and Vercel sensitive envs;
-runtime uses a scoped read/write role, administrative commands use a direct owner
-connection. Windows administration exports trusted system certificates for libpq
-without weakening certificate verification.
+## Actual resources and data outcome
 
-Initial Vercel build failed before dependency installation because a Ruff-only
-pyproject.toml took precedence over requirements.txt. Ruff settings moved to
-ruff.toml, retaining requirements.txt as the only dependency authority. Deployment,
-live verification, private administrator setup and final handoff remain in progress.
-The packaging retry built successfully. Live database routes then exposed missing
-libpq trust roots in Vercel; safe error categories identified TLS verification.
-Pinned Certifi now supplies portable Mozilla CA roots while retaining verify-full;
-neither DEBUG nor certificate verification was weakened.
+- Neon Free organization `org-cold-feather-57890093`; dedicated project
+  `noisy-bread-19614503` (rumi-library), PostgreSQL 18 database `rumi_library`.
+  Production branch `br-wild-credit-az43c4d3`; isolated verification branch
+  `br-dry-truth-azak0pak`. Both small computes capped at 0.25 CU.
+- Dedicated Vercel Hobby project `prj_jzs3N8jR34Lecm28HUmm7wVp2Kul` (rumi-library)
+  in team `rumiware1`, linked to SalmanAliAqdas/rumi-library-system, branch main.
+  Stable short alias verified as belonging to this project. Secondary owned alias
+  rumi-library-rumiware1.vercel.app points to it through canonical metadata.
+- Production launched with **0 editions, 0 copies and 0 loans**. Local SQLite
+  remains **20 fictional editions / 23 copies / 0 loans**; every edition was marked
+  demo and matched the known seed titles/keys. No samples were transferred/deleted.
+  No real-data transfer/source backup was needed. Production reference languages
+  en/ur/ar were created by migrations. Enter actual shelves and books live.
+- SchoolOS, Rumi Enquiry Assistant and other resources were not modified. No paid
+  service, billing activation, card-required feature, domain purchase or custom DNS.
+
+## Deployed configuration and fixes
+
+- Reviewed migrations explicitly applied once to verified empty production and
+  isolated verification targets: 22 Django migration records, catalog through 0004.
+  No build/startup/request migrations, seed or automatic administrator creation.
+- Runtime uses pooled `rumi_web`, scoped read/write, with 15-second statement
+  timeout; administrative helper uses direct `rumi_owner`. Actual client checks
+  confirm TLS with verify-full and no create-database/create-role/superuser runtime
+  privileges. Credentials are Vercel sensitive variables and ignored private local
+  env files. Existing development .env retained; nothing secret tracked.
+- Vercel's first build revealed that Ruff-only pyproject.toml shadowed
+  requirements.txt. Ruff moved to ruff.toml. Build logs then confirmed Python 3.13,
+  Django 5.2.19, requirements installation, collectstatic and successful deployment.
+- Live database reads initially failed because libpq lacked usable trust roots in
+  the Vercel runtime. Pinned Certifi 2026.10.23 supplies portable Mozilla roots;
+  full certificate/hostname verification remains enforced. Safe error categories
+  provide diagnostics without exception bodies, credentials or borrower data.
+- Explicit short/secondary allowed hosts and HTTPS CSRF origins; canonical SITE_URL
+  is https://rumi-library.vercel.app. HTTP → HTTPS 308 verified. HSTS is deliberately
+  3600 seconds with no subdomain inheritance/preload, applied on the final rebuild.
+- Production snapshot cap is 4 MiB, below the 4.5 MB function-response ceiling;
+  existing friendly failure/old-snapshot preservation remains. Development is 20 MiB.
+  Static fonts/icons/manifest and scoped service worker work on the actual CDN.
+- Final vercel.json enables Git production deployments only for main; other
+  branches do not auto-deploy and have no production credentials. Final pushed
+  commit/deployment correspondence is checked using Vercel Git metadata after push.
+  No migration automation. A malformed trailing dot in this repository's author
+  email was corrected for new commits only; existing history was preserved.
+
+## Checks actually completed
+
+- Full SQLite suite after runtime/TLS changes: **100 tests, 97 passed and 3
+  PostgreSQL-only skipped**. All **7 isolated Chromium cases passed**, including
+  populated lending/return/availability, QR preview/print PDF, multilingual CSV,
+  missing-cover placeholders, metadata approval, mobile RTL and offline flows.
+- **29 tests passed on the separate PostgreSQL verification branch, no skips**:
+  concurrent accessions, competing loans/retries/returns, shared provider gate,
+  private permissions/CSRF, dates/constraints, CSV/formula safety, labels, public
+  visibility/privacy/stable URLs, snapshot availability/limits/resources and fixture
+  language/audit round trips. Django's disposable test database was destroyed;
+  production was never a test target. Initial two failures came from TestCase's
+  already-open transaction conflicting with snapshot repeatable-read setup; those
+  tests now use TransactionTestCase, preserving production transaction guarantees.
+- Follow-up SQLite tests cover the changed transaction harness, log privacy,
+  production settings and offline bounds. Ruff lint/format, Django checks,
+  migration consistency, applied-migration checks, pip dependency check, Node
+  syntax and **5 Node offline tests** passed. Translation completeness/parity passed;
+  Python label catalogs require no gettext compilation.
+- Production collectstatic passed (147 unchanged files, 400 post-processed).
+  `check --deploy` exits 0; only intentional W005/W021 remain for disabled HSTS
+  subdomain inheritance/preload. No unresolved dependency, migration or TLS error.
+- **Actual live HTTPS Chromium checks passed** in fresh storage: homepage/health,
+  canonical/Open Graph, all local fonts/assets/icons/manifest, English/Urdu/Arabic,
+  mobile RTL and 1920px display; empty search/filter/page states, sitemap/robots,
+  safe production 404, anonymous private redirects and CSRF rejection. Display
+  screenshot visually reviewed. Catalog counts are truly zero, no invented stats.
+- Live temporary-account login/logout, secure/HttpOnly session cookie, private
+  no-store, loans/issue/labels empty pages, authenticated BOM CSV and **real Open
+  Library ISBN suggestion** succeeded. Manual draft title preserved, no book saved.
+  WhatsApp remains hidden/unconfigured; no message or external submission sent.
+- Live empty catalog downloaded with counts/timestamp, reloaded/searchable offline
+  in en/ur/ar; private GET/POST unavailable offline. Reconnect/update passed;
+  interrupted update retained the previous revision. Worker JavaScript/no-cache and
+  cache allowlist verified, excluding snapshots/private pages. Populated unvisited
+  book offline behavior was tested in isolation, not by publishing fake inventory.
+
+## Handoff and remaining manual checks
+
+See **docs/LIVE_OPERATIONS.md** for actual IDs, private admin commands, future
+main pushes/migrations, errors, free limits, backup/restore/rollback and Samsung/LED
+steps. README links the live site. docs/DEPLOYMENT.md links the current operations
+guide; earlier phase notes below are historical. The first verified live code is
+0906db1; the final documentation/config commit is verified after publishing it.
+
+Daily real entry should use the live librarian area. SQLite is separate; GitHub,
+CSV and browser downloads do not back up Neon records. Back up regularly and before
+schema changes. No full pg_dump/pg_restore drill was performed: matching client
+tools/private backup storage and a separate empty restore target remain required
+for that operational exercise, especially before full collection entry.
+
+Shared application throttles and default platform DDoS protection are active. A
+custom WAF login rule remains optional/unpublished; the exact free dashboard setup
+is in the deployment guide. Physical Samsung/other browsers, OS install,
+native-speaker review and actual LED/print/QR scanning remain manual. An empty live
+catalog cannot verify real-copy detail/QR content; those populated flows passed
+isolated tests. The preview conservatively warns on any vercel.app host; retain
+this verified stable alias and inspect one printed destination before a batch.
+No additional phase begins automatically.
 
 # Historical Phase 5 handoff
 

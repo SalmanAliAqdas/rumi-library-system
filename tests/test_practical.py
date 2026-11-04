@@ -10,7 +10,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.core.exceptions import ImproperlyConfigured
 from django.db import IntegrityError, transaction
-from django.test import Client, TestCase, override_settings
+from django.test import Client, TransactionTestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone, translation
 
@@ -24,7 +24,9 @@ from catalog.workflows import issue_token
 
 
 @override_settings(SITE_URL="https://library.example.org", SITE_URL_CONFIGURED=True)
-class PracticalTests(TestCase):
+class PracticalTests(TransactionTestCase):
+    # Snapshot export starts a durable repeatable-read transaction on PostgreSQL.
+    # Fixtures must commit before that transaction, matching real HTTP requests.
     def setUp(self):
         self.user = get_user_model().objects.create_superuser("phase4-fixture")
         self.shelf = Shelf.objects.create(label="Fixture shelf")

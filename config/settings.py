@@ -154,7 +154,8 @@ X_FRAME_OPTIONS = "DENY"
 # A single complete snapshot must fit these bounds; exceeding any limit is an error.
 OFFLINE_MAX_EDITIONS = 5000
 OFFLINE_MAX_COPIES = 10000
-OFFLINE_MAX_BYTES = 20 * 1024 * 1024
+# Leave room below Vercel's 4.5 MB non-streaming function response limit.
+OFFLINE_MAX_BYTES = (20 if DEBUG else 4) * 1024 * 1024
 
 if DATABASES["default"]["ENGINE"] == "django.db.backends.postgresql":
     DATABASES["default"]["DISABLE_SERVER_SIDE_CURSORS"] = True

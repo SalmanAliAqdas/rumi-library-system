@@ -1,9 +1,17 @@
-# Phase 5 launch handoff
+# Deployment guide
 
-Prepared November 5, 2026 (Asia/Karachi). No infrastructure has been provisioned,
-no accounts inspected and no deployment performed. PostgreSQL and hosted behavior
-are launch gates. Enter real books gradually after the transfer rehearsal below.
-Permanent QR labels must wait for the final public address.
+Phase 6 live installation: **https://rumi-library.vercel.app/**. See
+[LIVE_OPERATIONS.md](LIVE_OPERATIONS.md) for actual project IDs, account setup,
+release, backup and device steps. The production dependency manifest is
+requirements.txt; Ruff settings now live in ruff.toml. TLS uses pinned Certifi CA
+roots with verify-full, replacing the unverified system-store assumption below.
+Git deployment is now enabled for main only. The Phase 5 preparation notes below
+are retained as a checklist, with actual outcomes in PROJECT_STATUS.md.
+
+Prepared and updated November 5, 2026 (Asia/Karachi). Phase 6 provisioned the
+dedicated resources, applied migrations and verified the live empty catalog.
+Reuse the Rumi resources listed in LIVE_OPERATIONS.md; do not create duplicates.
+The procedure below also covers future fresh installations and schema releases.
 
 ## Account and free-plan decisions
 
@@ -62,11 +70,11 @@ driver. Use Neon's **pooled** URL for web requests and **direct** URL for migrat
 data loading and backups. Connections close after requests (`CONN_MAX_AGE=0`),
 server-side cursors are disabled for transaction pooling, and connection timeout
 is five seconds. See [Neon Django](https://neon.com/docs/guides/django).
-Production enforces `sslmode=verify-full` with `sslrootcert=system`; the pinned
-libpq supports the [system trust option](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNECT-SSLROOTCERT).
-Verify TLS on the actual runtime. Windows may need `SSL_CERT_FILE` pointing to a
-private trusted CA bundle for OpenSSL's system store. Never weaken TLS to bypass
-an error. [Neon secure connections](https://neon.com/docs/connect/connect-securely).
+Production enforces `sslmode=verify-full` with `sslrootcert=certifi.where()`.
+Pinned [Certifi](https://pypi.org/project/certifi/) supplies Mozilla CA roots across
+Windows and Vercel; relying on libpq's system store failed in the actual runtime.
+TLS was verified without weakening encryption or hostname checks. Recheck it
+after dependency/runtime changes. [Neon secure connections](https://neon.com/docs/connect/connect-securely).
 
 The release operator should set `statement_timeout` to 15 seconds on the separate
 Rumi web role using the Neon SQL editor (`ALTER ROLE <rumi_web_role> SET
@@ -84,7 +92,7 @@ warnings. Application error logs omit request data, SQL and exception bodies;
 platform access logs still need private access/retention management. `/health/`
 is public liveness only, not a database readiness check.
 
-## Deliberate release steps (after separate authorization)
+## Deliberate future release procedure
 
 1. Rehearse [SQLite transfer](TRANSFER.md), PostgreSQL tests and private
    [backup/restore](BACKUPS.md) on the separate disposable target. Do not use a
@@ -110,11 +118,11 @@ is public liveness only, not a database readiness check.
    requirements are installed normally. `vercel.json` caps the function at 30s.
    No filesystem uploads or persistent SQLite are used. Missing production
    configuration aborts startup/build instead of selecting SQLite.
-6. Git auto-deployment is explicitly disabled in `vercel.json` so this Phase 5 push
-   cannot initiate deployment. After separate launch authorization, deploy manually
-   through the chosen release process or deliberately enable Git deployments.
+6. Phase 6 enables Git auto-deployment **only for main** in `vercel.json`.
+   Reviewed main pushes build production code; other branches do not auto-deploy.
+   Database migrations remain a separate deliberate action, never a build step.
    [Vercel Git configuration](https://vercel.com/docs/project-configuration/git-configuration).
-   Choose a function region near the Neon database in project settings.
+   The dedicated project selects sin1 near the Neon Singapore database.
 7. Configure the final domain and SITE_URL before permanent labels. For an initial
    preview, use its exact HTTPS origin/host, protect it, then switch to the final
    domain and rebuild. Do not print permanent labels for a preview address.

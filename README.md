@@ -2,6 +2,25 @@
 
 A personal home library, built with Django templates, local CSS and modest vanilla JavaScript. Public browsing needs no login. The librarian uses a private mobile-friendly dashboard, with Django admin still available. A RumiWare portfolio project; one library per installation.
 
+## Live library — Phase 6
+
+Public: **https://rumi-library.vercel.app/** ·
+Librarian: **https://rumi-library.vercel.app/librarian/login/** ·
+Room display: **https://rumi-library.vercel.app/?display=1** ·
+Offline: **https://rumi-library.vercel.app/offline/**
+
+Use your privately created librarian account for daily real book entry on the
+live site. It starts with an empty catalog; the 20 fictional local editions and
+23 copies were left locally. Local SQLite and Neon are separate. GitHub stores
+code, not your live records; offline downloads and CSV are not full backups.
+Permanent labels use the chosen stable address above. No domain was purchased.
+
+Reviewed main-branch pushes now trigger Vercel production builds; migrations remain
+a deliberate direct-database step, never automatic in requests/builds. Other
+branches do not auto-deploy. See [live operations](docs/LIVE_OPERATIONS.md) for
+resource identifiers, safe administration/backup/rollback commands, free-plan
+limits and Samsung/LED checks. Production uses requirements.txt and ruff.toml.
+
 ## Phase 5: assistance and launch preparation
 
 In Add a book or Edit edition, expand **Optional book information**, enter ISBN
@@ -39,9 +58,9 @@ by installation or startup.
 Follow the [Neon/Vercel launch guide](docs/DEPLOYMENT.md) for account eligibility,
 free limits checked November 5, 2026, environment variables, migrations, static
 build, administrator creation and verification. Infrastructure and deployment
-require separate authorization. Git auto-deploy is disabled in `vercel.json`.
-PostgreSQL/TLS/hosted verification remains required before production. Wait for the
-final public SITE_URL before printing permanent QR labels.
+were separately authorized in Phase 6. Git auto-deploy is now enabled for main
+only in `vercel.json`. See the current [handoff](docs/PROJECT_STATUS.md) for actual
+PostgreSQL/TLS/hosted verification and remaining manual checks.
 
 ## Windows PowerShell setup
 
@@ -344,7 +363,7 @@ Phase 1 is the working foundation: models, migrations, private admin, welcome, b
 - **Phase 4 — completed, practical extras:** custom private issue/return workflow, validated optional WhatsApp enquiry links with title/accession/URL, stable copy QR destinations across translated routes, private printable labels, public catalogue CSV export and a separate documented private backup process.
 - **Phase 5 — assistance, launch and polish:** optional Open Library/Google Books metadata suggestions with server timeouts/limits/validation/error handling, explicit approval and source attribution, no silent overwrite and no blocking browsing/manual entry; SEO, public-only sitemap/metadata/security; verify current free-plan allowances and permitted usage; production verification on dedicated Neon/PostgreSQL and Vercel. Never enable paid services.
 
-Phases 1–5 are implemented, including optional metadata assistance, public SEO and launch preparation. PostgreSQL and hosted verification remain required before production. Deployment requires separate authorization. See [project handoff](docs/PROJECT_STATUS.md).
+Phases 1–6 are implemented, including optional metadata assistance, SEO and the verified live empty catalog. See [project handoff](docs/PROJECT_STATUS.md) for actual SQLite/PostgreSQL/live results and remaining operational/device checks.
 
 ## GitHub
 

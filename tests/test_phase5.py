@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 from django.contrib.auth import get_user_model
 from django.core import signing
 from django.core.management import call_command
-from django.test import Client, TestCase, override_settings
+from django.test import Client, TestCase, TransactionTestCase, override_settings
 from django.urls import reverse
 
 from catalog.metadata import LookupError, fetch, lookup, reserve_request, signed_result, suggestion
@@ -299,6 +299,8 @@ class LaunchTests(TestCase):
                 overrides,
             )
 
+
+class TransferAuditTests(TransactionTestCase):
     def test_read_only_audit_and_fixture_round_trip(self):
         from django.core import serializers
 
@@ -306,7 +308,7 @@ class LaunchTests(TestCase):
         book = Edition.objects.create(title="علم", metadata_source="https://openlibrary.org/books/OL1M")
         copy = Copy.objects.create(edition=book, shelf=shelf, is_public=False)
         Loan.objects.create(copy=copy, borrower_name="Private fixture")
-        book.languages.add(Language.objects.get(code="ur"))
+        book.languages.add(Language.objects.get_or_create(code="ur", defaults={"name": "اردو"})[0])
         before = io.StringIO()
         call_command("audit_catalog", stdout=before)
         fixture = io.StringIO()

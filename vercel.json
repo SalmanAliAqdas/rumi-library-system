@@ -4,5 +4,5 @@
   "functions": {
     "config/wsgi.py": { "maxDuration": 30 }
   },
-  "git": { "deploymentEnabled": false }
+  "git": { "deploymentEnabled": { "main": true, "*": false } }
 }
