@@ -1,4 +1,29 @@
-# Project status — Phase 5
+# Phase 6 deployment in progress
+
+November 5, 2026 (Asia/Karachi). User authorized provisioning and deployment.
+Dedicated Neon project `noisy-bread-19614503` (rumi-library), production branch
+`br-wild-credit-az43c4d3`, verification branch `br-dry-truth-azak0pak`, database
+`rumi_library`. Dedicated Vercel project `prj_jzs3N8jR34Lecm28HUmm7wVp2Kul` in
+team `rumiware1`, linked to SalmanAliAqdas/rumi-library-system. Reserved address:
+https://rumi-library-rumiware1.vercel.app (not yet verified live).
+
+Local SQLite contains only 20 marked/recognized fictional editions, 23 copies and
+zero loans. Samples remain local; production starts empty. Existing Neon/Vercel
+projects were not modified. Both accounts are on Free/Hobby; no billing enabled.
+Full SQLite/browser suite: 100 tests, 97 passed, 3 PostgreSQL-only skipped. Four
+dedicated PostgreSQL concurrency/import tests passed without skips. Reviewed
+migrations applied explicitly to verification and empty production databases.
+Production credentials use ignored private local files and Vercel sensitive envs;
+runtime uses a scoped read/write role, administrative commands use a direct owner
+connection. Windows administration exports trusted system certificates for libpq
+without weakening certificate verification.
+
+Initial Vercel build failed before dependency installation because a Ruff-only
+pyproject.toml took precedence over requirements.txt. Ruff settings moved to
+ruff.toml, retaining requirements.txt as the only dependency authority. Deployment,
+live verification, private administrator setup and final handoff remain in progress.
+
+# Historical Phase 5 handoff
 
 Date: November 5, 2026 (Asia/Karachi). Phase 5 implemented locally. No services
 provisioned, accounts inspected, hosted databases accessed, deployment, real
